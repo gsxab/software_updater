@@ -68,7 +68,7 @@ func (e *DefaultEngine) NeedCrawl(ctx context.Context) (hps []*po.Homepage, err 
 		hps, err = hpDAO.WithContext(ctx).Find()
 	} else {
 		hps, err = hpDAO.WithContext(ctx).LeftJoin(cvDAO).
-			Where(cvDAO.NextAccess.IsNull()).Or(cvDAO.NextAccess.Lte(time.Now())).
+			Where(cvDAO.ScheduledAt.IsNull()).Or(cvDAO.ScheduledAt.Lte(time.Now())).
 			Find()
 	}
 	return

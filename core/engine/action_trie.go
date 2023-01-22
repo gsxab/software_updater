@@ -17,7 +17,11 @@ type ActionTrie interface {
 }
 
 func NewActionTrie() ActionTrie {
-	return &ActionTrieImpl{}
+	return &ActionTrieImpl{
+		ActionTrieNode: &ActionTrieInternalNode{
+			children: make(map[string]ActionTrieNode),
+		},
+	}
 }
 
 type ActionTrieImpl struct {
@@ -63,11 +67,13 @@ func (a *ActionTrieImpl) getNodeAllHooks(path action.Path) (node ActionTrieNode,
 }
 
 func (a *ActionTrieImpl) getOrCreateLeafNode(path action.Path) (node ActionTrieNode, err error) {
+	node = a.ActionTrieNode
+	var newNode ActionTrieNode
 	last := len(path) - 1
 	for idx, key := range path[:last] {
-		node, err = node.Child(key)
+		newNode, err = node.Child(key)
 		if err != nil {
-			newNode := &ActionTrieInternalNode{
+			newNode = &ActionTrieInternalNode{
 				ActionTrieNodeBase: ActionTrieNodeBase{
 					path: strings.Join(path[:idx], "."),
 				},
@@ -77,8 +83,8 @@ func (a *ActionTrieImpl) getOrCreateLeafNode(path action.Path) (node ActionTrieN
 			if err != nil {
 				return nil, err
 			}
-			node = newNode
 		}
+		node = newNode
 	}
 	leaf, err := node.Child(path[last])
 	if err != nil {

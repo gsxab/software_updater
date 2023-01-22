@@ -27,6 +27,9 @@ func InitEngine(config *config.EngineConfig, extraPlugins ...Plugin) (Engine, er
 	plugins := DefaultPlugins(config)
 	plugins = append(plugins, extraPlugins...)
 	for _, plugin := range plugins {
+		if plugin == nil {
+			continue
+		}
 		plugin.apply(engine)
 	}
 

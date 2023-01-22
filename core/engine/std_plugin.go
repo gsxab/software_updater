@@ -14,7 +14,7 @@ func DefaultPlugins(config *config.EngineConfig) []Plugin {
 		debugCheckPlugin = getDebugCheckPlugin()
 	}
 
-	return []Plugin{
+	stdPlugins := []Plugin{
 		// basic function
 		&ActionPlugin{
 			Factories: []action.Factory{
@@ -74,8 +74,11 @@ func DefaultPlugins(config *config.EngineConfig) []Plugin {
 				//&action.StoreStr{},
 			},
 		},
-		debugCheckPlugin,
 	}
+	if debugCheckPlugin != nil {
+		stdPlugins = append(stdPlugins, debugCheckPlugin)
+	}
+	return stdPlugins
 }
 
 func getDebugCheckPlugin() *HookPlugin {

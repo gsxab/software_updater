@@ -34,7 +34,7 @@ func newHomepage(db *gorm.DB, opts ...gen.DOOption) homepage {
 	_homepage.Name = field.NewString(tableName, "name")
 	_homepage.HomepageURL = field.NewString(tableName, "homepage_url")
 	_homepage.Actions = field.NewString(tableName, "version_actions")
-	_homepage.NoUpdate = field.NewBool(tableName, "update")
+	_homepage.NoUpdate = field.NewBool(tableName, "no_update")
 	_homepage.Current = homepageHasOneCurrent{
 		db: db.Session(&gorm.Session{}),
 
@@ -87,7 +87,7 @@ func (h *homepage) updateTableName(table string) *homepage {
 	h.Name = field.NewString(table, "name")
 	h.HomepageURL = field.NewString(table, "homepage_url")
 	h.Actions = field.NewString(table, "version_actions")
-	h.NoUpdate = field.NewBool(table, "update")
+	h.NoUpdate = field.NewBool(table, "no_update")
 
 	h.fillFieldMap()
 
@@ -118,7 +118,7 @@ func (h *homepage) fillFieldMap() {
 	h.fieldMap["name"] = h.Name
 	h.fieldMap["homepage_url"] = h.HomepageURL
 	h.fieldMap["version_actions"] = h.Actions
-	h.fieldMap["update"] = h.NoUpdate
+	h.fieldMap["no_update"] = h.NoUpdate
 
 }
 

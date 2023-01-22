@@ -7,6 +7,7 @@ import (
 	"software_updater/core/db"
 	"software_updater/core/engine"
 	"software_updater/core/tools/web"
+	"software_updater/ui"
 )
 
 func main() {
@@ -15,12 +16,12 @@ func main() {
 		log.Panic(err)
 	}
 
-	err = db.InitDB(&conf.Database)
+	err = db.InitDB(conf.Database)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	err = web.InitSelenium(&conf.Selenium)
+	err = web.InitSelenium(conf.Selenium)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -28,13 +29,20 @@ func main() {
 		_ = web.StopSelenium()
 	}()
 
-	e, err := engine.InitEngine(&conf.Engine)
+	e, err := engine.InitEngine(conf.Engine)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	err = e.CrawlAll(context.Background())
-	if err != nil {
-		log.Panic(err)
+	if disableUI := conf.Extra["disable_ui"]; disableUI != "true" {
+		err = ui.InitAndRun(context.Background(), conf.Extra["ui"])
+		if err != nil {
+			log.Panic(err)
+		}
+	} else {
+		err = e.CrawlAll(context.Background())
+		if err != nil {
+			log.Panic(err)
+		}
 	}
 }

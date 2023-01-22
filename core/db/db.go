@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 	"log"
 	"software_updater/core/config"
+	"software_updater/core/db/dao"
 	"software_updater/core/db/po"
 )
 
@@ -43,5 +44,8 @@ func InitDB(conf *config.DatabaseConfig) (err error) {
 			return
 		}
 	}
+
+	dao.SetDefault(db)
+
 	return nil
 }

@@ -7,10 +7,11 @@ import (
 )
 
 type Config struct {
-	Files    FileConfig     `yaml:"files,omitempty"`
-	Database DatabaseConfig `yaml:"database,omitempty"`
-	Selenium SeleniumConfig `yaml:"selenium,omitempty"`
-	Engine   EngineConfig   `yaml:"engine,omitempty"`
+	Files    *FileConfig       `yaml:"files,omitempty"`
+	Database *DatabaseConfig   `yaml:"database,omitempty"`
+	Selenium *SeleniumConfig   `yaml:"selenium,omitempty"`
+	Engine   *EngineConfig     `yaml:"engine,omitempty"`
+	Extra    map[string]string `yaml:"extra,omitempty"`
 }
 
 type FileConfig struct {
@@ -40,19 +41,19 @@ var config = DefaultConfig()
 
 func DefaultConfig() *Config {
 	return &Config{
-		Files: FileConfig{
+		Files: &FileConfig{
 			ScreenshotDir: "./screenshot/",
 			HTMLDir:       "./html/",
 		},
-		Database: DatabaseConfig{
+		Database: &DatabaseConfig{
 			Driver: "sqlite",
 			DSN:    "./software.db",
 		},
-		Selenium: SeleniumConfig{
+		Selenium: &SeleniumConfig{
 			Params:     nil,
 			DriverPath: "./chromedriver",
 		},
-		Engine: EngineConfig{
+		Engine: &EngineConfig{
 			ForceCrawl:  false,
 			ForceUpdate: false,
 			DebugLog:    false,

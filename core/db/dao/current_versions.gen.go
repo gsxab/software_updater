@@ -32,7 +32,7 @@ func newCurrentVersion(db *gorm.DB, opts ...gen.DOOption) currentVersion {
 	_currentVersion.UpdatedAt = field.NewTime(tableName, "updated_at")
 	_currentVersion.DeletedAt = field.NewField(tableName, "deleted_at")
 	_currentVersion.Name = field.NewString(tableName, "name")
-	_currentVersion.NextAccess = field.NewTime(tableName, "next_access")
+	_currentVersion.ScheduledAt = field.NewTime(tableName, "scheduled_at")
 	_currentVersion.CurrentVersionID = field.NewUint(tableName, "current_version_id")
 	_currentVersion.Info = field.NewString(tableName, "info")
 	_currentVersion.CurrentVersion = currentVersionHasOneCurrentVersion{
@@ -55,7 +55,7 @@ type currentVersion struct {
 	UpdatedAt        field.Time
 	DeletedAt        field.Field
 	Name             field.String
-	NextAccess       field.Time
+	ScheduledAt      field.Time
 	CurrentVersionID field.Uint
 	Info             field.String
 	CurrentVersion   currentVersionHasOneCurrentVersion
@@ -80,7 +80,7 @@ func (c *currentVersion) updateTableName(table string) *currentVersion {
 	c.UpdatedAt = field.NewTime(table, "updated_at")
 	c.DeletedAt = field.NewField(table, "deleted_at")
 	c.Name = field.NewString(table, "name")
-	c.NextAccess = field.NewTime(table, "next_access")
+	c.ScheduledAt = field.NewTime(table, "scheduled_at")
 	c.CurrentVersionID = field.NewUint(table, "current_version_id")
 	c.Info = field.NewString(table, "info")
 
@@ -113,7 +113,7 @@ func (c *currentVersion) fillFieldMap() {
 	c.fieldMap["updated_at"] = c.UpdatedAt
 	c.fieldMap["deleted_at"] = c.DeletedAt
 	c.fieldMap["name"] = c.Name
-	c.fieldMap["next_access"] = c.NextAccess
+	c.fieldMap["scheduled_at"] = c.ScheduledAt
 	c.fieldMap["current_version_id"] = c.CurrentVersionID
 	c.fieldMap["info"] = c.Info
 
