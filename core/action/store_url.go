@@ -16,7 +16,7 @@ type StoreURL struct {
 }
 
 func (a *StoreURL) Path() Path {
-	return Path{"basic", " value_store", " store_url"}
+	return Path{"basic", "value_store", "store_url"}
 }
 
 func (a *StoreURL) Do(ctx context.Context, driver selenium.WebDriver, input *Args, version *po.Version, wg *sync.WaitGroup) (output *Args, exit Result, err error) {

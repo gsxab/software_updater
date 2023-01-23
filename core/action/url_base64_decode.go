@@ -14,7 +14,7 @@ type URLBase64Decode struct {
 }
 
 func (a *URLBase64Decode) Path() Path {
-	return Path{"decoder", " rfc4648", " url_base64_decode"}
+	return Path{"decoder", "rfc4648", "url_base64_decode"}
 }
 
 func (a *URLBase64Decode) Do(ctx context.Context, driver selenium.WebDriver, input *Args, version *po.Version, wg *sync.WaitGroup) (output *Args, exit Result, err error) {

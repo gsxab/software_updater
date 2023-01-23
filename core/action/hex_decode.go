@@ -14,7 +14,7 @@ type HexDecode struct {
 }
 
 func (a *HexDecode) Path() Path {
-	return Path{"string", " decoder", " hex_decode"}
+	return Path{"string", "decoder", "hex_decode"}
 }
 
 func (a *HexDecode) Do(ctx context.Context, driver selenium.WebDriver, input *Args, version *po.Version, wg *sync.WaitGroup) (output *Args, exit Result, err error) {

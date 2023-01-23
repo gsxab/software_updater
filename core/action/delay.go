@@ -16,7 +16,7 @@ type WaitFor struct {
 }
 
 func (a *WaitFor) Path() Path {
-	return Path{"basic", " wait", " delay"}
+	return Path{"basic", "wait", "delay"}
 }
 
 func (a *WaitFor) Init(context.Context, *sync.WaitGroup) (err error) {

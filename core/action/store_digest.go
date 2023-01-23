@@ -16,7 +16,7 @@ type StoreDigest struct {
 }
 
 func (a *StoreDigest) Path() Path {
-	return Path{"basic", " value_store", " store_digest"}
+	return Path{"basic", "value_store", "store_digest"}
 }
 
 func (a *StoreDigest) Do(ctx context.Context, driver selenium.WebDriver, input *Args, version *po.Version, wg *sync.WaitGroup) (output *Args, exit Result, err error) {

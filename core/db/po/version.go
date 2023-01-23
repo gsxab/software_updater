@@ -15,5 +15,6 @@ type Version struct {
 	Digest     *string         `gorm:"column:digest"`
 	RemoteDate *time.Time      `gorm:"column:remote_date;type:date"`
 	LocalTime  *time.Time      `gorm:"column:local_time"`
+	Previous   *string         `gorm:"column:previous_version"`
 	CV         *CurrentVersion `gorm:"foreignKey:VersionID;references:ID"`
 }

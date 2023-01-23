@@ -14,7 +14,7 @@ type HexEncode struct {
 }
 
 func (a *HexEncode) Path() Path {
-	return Path{"encoder", " rfc4648", " hex_encode"}
+	return Path{"encoder", "rfc4648", "hex_encode"}
 }
 
 func (a *HexEncode) Do(ctx context.Context, driver selenium.WebDriver, input *Args, version *po.Version, wg *sync.WaitGroup) (output *Args, exit Result, err error) {

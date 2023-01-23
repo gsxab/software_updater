@@ -16,7 +16,7 @@ type StoreVersion struct {
 }
 
 func (a *StoreVersion) Path() Path {
-	return Path{"basic", " value_store", " store_version"}
+	return Path{"basic", "value_store", "store_version"}
 }
 
 func (a *StoreVersion) Do(ctx context.Context, driver selenium.WebDriver, input *Args, version *po.Version, wg *sync.WaitGroup) (output *Args, exit Result, err error) {

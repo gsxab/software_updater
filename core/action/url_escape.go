@@ -14,7 +14,7 @@ type URLEscape struct {
 }
 
 func (a *URLEscape) Path() Path {
-	return Path{"string", " mutator", " url_escape"}
+	return Path{"string", "mutator", "url_escape"}
 }
 
 func (a *URLEscape) Do(ctx context.Context, driver selenium.WebDriver, input *Args, version *po.Version, wg *sync.WaitGroup) (output *Args, exit Result, err error) {

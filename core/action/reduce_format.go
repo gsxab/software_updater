@@ -17,7 +17,7 @@ type ReduceFormat struct {
 }
 
 func (a *ReduceFormat) Path() Path {
-	return Path{"string", " mutator", " reduce_format"}
+	return Path{"string", "mutator", "reduce_format"}
 }
 
 func (a *ReduceFormat) OutStrNum() int {

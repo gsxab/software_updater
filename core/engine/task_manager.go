@@ -96,7 +96,7 @@ func (t *JobManager) InitFlow(ctx context.Context, flow *job.Flow) error {
 		close(overChan)
 	}()
 
-	t.initBranch(ctx, flow.Root, &error_util.ChannelCollector{errChan}, &wg)
+	t.initBranch(ctx, flow.Root, &error_util.ChannelCollector{Channel: errChan}, &wg)
 
 	wg.Wait()
 	close(errChan)
@@ -132,7 +132,7 @@ func (t *JobManager) RunJobs(ctx context.Context, flow *job.Flow, driver seleniu
 	var args *action.Args
 	v := cv.Version
 
-	t.runBranch(ctx, flow.Root, driver, args, v, &error_util.ChannelCollector{errChan}, &wg)
+	t.runBranch(ctx, flow.Root, driver, args, v, &error_util.ChannelCollector{Channel: errChan}, &wg)
 
 	wg.Wait()
 	close(errChan)

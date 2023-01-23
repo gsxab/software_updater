@@ -19,7 +19,7 @@ type RegexpExtract struct {
 }
 
 func (a *RegexpExtract) Path() Path {
-	return Path{"string", " mutator", " regexp_extract"}
+	return Path{"string", "mutator", "regexp_extract"}
 }
 
 func (a *RegexpExtract) Init(context.Context, *sync.WaitGroup) (err error) {
