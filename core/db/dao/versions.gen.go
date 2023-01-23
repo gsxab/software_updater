@@ -37,8 +37,26 @@ func newVersion(db *gorm.DB, opts ...gen.DOOption) version {
 	_version.Picture = field.NewString(tableName, "picture")
 	_version.Link = field.NewString(tableName, "link")
 	_version.Digest = field.NewString(tableName, "digest")
-	_version.RemoteDate = field.NewTime(tableName, "remote_update")
+	_version.RemoteDate = field.NewTime(tableName, "remote_date")
 	_version.LocalTime = field.NewTime(tableName, "local_time")
+	_version.CV = versionHasOneCV{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("CV", "po.CurrentVersion"),
+		Version: struct {
+			field.RelationField
+			CV struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("CV.Version", "po.Version"),
+			CV: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("CV.Version.CV", "po.CurrentVersion"),
+			},
+		},
+	}
 
 	_version.fillFieldMap()
 
@@ -61,6 +79,7 @@ type version struct {
 	Digest     field.String
 	RemoteDate field.Time
 	LocalTime  field.Time
+	CV         versionHasOneCV
 
 	fieldMap map[string]field.Expr
 }
@@ -87,7 +106,7 @@ func (v *version) updateTableName(table string) *version {
 	v.Picture = field.NewString(table, "picture")
 	v.Link = field.NewString(table, "link")
 	v.Digest = field.NewString(table, "digest")
-	v.RemoteDate = field.NewTime(table, "remote_update")
+	v.RemoteDate = field.NewTime(table, "remote_date")
 	v.LocalTime = field.NewTime(table, "local_time")
 
 	v.fillFieldMap()
@@ -111,7 +130,7 @@ func (v *version) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (v *version) fillFieldMap() {
-	v.fieldMap = make(map[string]field.Expr, 12)
+	v.fieldMap = make(map[string]field.Expr, 13)
 	v.fieldMap["id"] = v.ID
 	v.fieldMap["created_at"] = v.CreatedAt
 	v.fieldMap["updated_at"] = v.UpdatedAt
@@ -122,8 +141,9 @@ func (v *version) fillFieldMap() {
 	v.fieldMap["picture"] = v.Picture
 	v.fieldMap["link"] = v.Link
 	v.fieldMap["digest"] = v.Digest
-	v.fieldMap["remote_update"] = v.RemoteDate
+	v.fieldMap["remote_date"] = v.RemoteDate
 	v.fieldMap["local_time"] = v.LocalTime
+
 }
 
 func (v version) clone(db *gorm.DB) version {
@@ -134,6 +154,79 @@ func (v version) clone(db *gorm.DB) version {
 func (v version) replaceDB(db *gorm.DB) version {
 	v.versionDo.ReplaceDB(db)
 	return v
+}
+
+type versionHasOneCV struct {
+	db *gorm.DB
+
+	field.RelationField
+
+	Version struct {
+		field.RelationField
+		CV struct {
+			field.RelationField
+		}
+	}
+}
+
+func (a versionHasOneCV) Where(conds ...field.Expr) *versionHasOneCV {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a versionHasOneCV) WithContext(ctx context.Context) *versionHasOneCV {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a versionHasOneCV) Model(m *po.Version) *versionHasOneCVTx {
+	return &versionHasOneCVTx{a.db.Model(m).Association(a.Name())}
+}
+
+type versionHasOneCVTx struct{ tx *gorm.Association }
+
+func (a versionHasOneCVTx) Find() (result *po.CurrentVersion, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a versionHasOneCVTx) Append(values ...*po.CurrentVersion) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a versionHasOneCVTx) Replace(values ...*po.CurrentVersion) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a versionHasOneCVTx) Delete(values ...*po.CurrentVersion) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a versionHasOneCVTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a versionHasOneCVTx) Count() int64 {
+	return a.tx.Count()
 }
 
 type versionDo struct{ gen.DO }

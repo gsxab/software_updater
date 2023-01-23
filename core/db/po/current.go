@@ -7,9 +7,9 @@ import (
 
 type CurrentVersion struct {
 	gorm.Model
-	Name             string     `gorm:"column:name;index;unique"`
-	ScheduledAt      *time.Time `gorm:"column:scheduled_at"`
-	CurrentVersionID uint       `gorm:"column:current_version_id;notNull"`
-	Info             string     `gorm:"column:info"`
-	CurrentVersion   *Version   `gorm:"references:CurrentVersionID;foreignKey:ID"`
+	Name        string     `gorm:"column:name;index;unique"`
+	ScheduledAt *time.Time `gorm:"column:scheduled_at"`
+	VersionID   uint       `gorm:"column:version_id;notNull"`
+	Info        string     `gorm:"column:info"`
+	Version     *Version   `gorm:"joinForeignKey:ID;joinReferences:VersionID"`
 }

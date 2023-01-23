@@ -38,27 +38,27 @@ func (a *App) initGUI(ctx context.Context) error {
 			return len(a.listData) + 1, 4
 		},
 		func() fyne.CanvasObject {
-			return container.NewHBox(widget.NewLabel("stub"))
+			return widget.NewLabel("stub")
 		},
 		func(id widget.TableCellID, object fyne.CanvasObject) {
 			if id.Row == 0 {
 				headers := []string{"name", "version", "update date", "scheduled date", "actions"}
-				label := object.(*fyne.Container).Objects[0].(*widget.Label)
+				label := object.(*widget.Label)
 				label.SetText(headers[id.Col])
 				return
 			}
 			switch id.Col {
 			case 0:
-				label := object.(*fyne.Container).Objects[0].(*widget.Label)
+				label := object.(*widget.Label)
 				label.SetText(a.listData[id.Row-1].Name)
 			case 1:
-				label := object.(*fyne.Container).Objects[0].(*widget.Label)
+				label := object.(*widget.Label)
 				label.SetText(util.Default(a.listData[id.Row-1].Version, ""))
 			case 2:
-				label := object.(*fyne.Container).Objects[0].(*widget.Label)
+				label := object.(*widget.Label)
 				label.SetText(util.Default(a.listData[id.Row-1].UpdateDate, ""))
 			case 3:
-				label := object.(*fyne.Container).Objects[0].(*widget.Label)
+				label := object.(*widget.Label)
 				label.SetText(util.Default(a.listData[id.Row-1].SchedDate, ""))
 			}
 		},
@@ -103,12 +103,26 @@ func (a *App) initGUI(ctx context.Context) error {
 }
 
 func (a *App) reloadData(ctx context.Context) error {
+	hpDAO := dao.Homepage
+	cvDAO := dao.CurrentVersion
+	vDAO := dao.Version
+
 	data := make([]*dto.ListItemDTO, 0)
-	homepages, err := dao.Homepage.WithContext(ctx).LeftJoin(dao.CurrentVersion).LeftJoin(dao.Version).Find()
+	homepages, err := hpDAO.WithContext(ctx).Order(hpDAO.Name).Find()
 	if err != nil {
 		return err
 	}
 	for _, homepage := range homepages {
+		homepage.Current, err = cvDAO.WithContext(ctx).Where(cvDAO.Name.Eq(homepage.Name)).Take()
+		if err != nil {
+			return err
+		}
+		if homepage.Current != nil {
+			homepage.Current.Version, err = vDAO.WithContext(ctx).Where(vDAO.ID.Eq(homepage.Current.VersionID)).Take()
+			if err != nil {
+				return err
+			}
+		}
 		data = append(data, dto.NewListItemDTO(homepage, uiConfig.DateFormat))
 	}
 	a.listData = data

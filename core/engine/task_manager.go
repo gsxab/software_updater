@@ -130,7 +130,7 @@ func (t *JobManager) RunJobs(ctx context.Context, flow *job.Flow, driver seleniu
 	}()
 
 	var args *action.Args
-	v := cv.CurrentVersion
+	v := cv.Version
 
 	t.runBranch(ctx, flow.Root, driver, args, v, &error_util.ChannelCollector{errChan}, &wg)
 

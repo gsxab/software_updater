@@ -39,11 +39,25 @@ func newHomepage(db *gorm.DB, opts ...gen.DOOption) homepage {
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("Current", "po.CurrentVersion"),
-		CurrentVersion: struct {
+		Version: struct {
 			field.RelationField
+			CV struct {
+				field.RelationField
+			}
 		}{
-			RelationField: field.NewRelation("Current.CurrentVersion", "po.Version"),
+			RelationField: field.NewRelation("Current.Version", "po.Version"),
+			CV: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("Current.Version.CV", "po.CurrentVersion"),
+			},
 		},
+	}
+
+	_homepage.Versions = homepageHasManyVersions{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Versions", "po.Version"),
 	}
 
 	_homepage.fillFieldMap()
@@ -64,6 +78,8 @@ type homepage struct {
 	Actions     field.String
 	NoUpdate    field.Bool
 	Current     homepageHasOneCurrent
+
+	Versions homepageHasManyVersions
 
 	fieldMap map[string]field.Expr
 }
@@ -110,7 +126,7 @@ func (h *homepage) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (h *homepage) fillFieldMap() {
-	h.fieldMap = make(map[string]field.Expr, 9)
+	h.fieldMap = make(map[string]field.Expr, 10)
 	h.fieldMap["id"] = h.ID
 	h.fieldMap["created_at"] = h.CreatedAt
 	h.fieldMap["updated_at"] = h.UpdatedAt
@@ -137,8 +153,11 @@ type homepageHasOneCurrent struct {
 
 	field.RelationField
 
-	CurrentVersion struct {
+	Version struct {
 		field.RelationField
+		CV struct {
+			field.RelationField
+		}
 	}
 }
 
@@ -199,6 +218,72 @@ func (a homepageHasOneCurrentTx) Clear() error {
 }
 
 func (a homepageHasOneCurrentTx) Count() int64 {
+	return a.tx.Count()
+}
+
+type homepageHasManyVersions struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a homepageHasManyVersions) Where(conds ...field.Expr) *homepageHasManyVersions {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a homepageHasManyVersions) WithContext(ctx context.Context) *homepageHasManyVersions {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a homepageHasManyVersions) Model(m *po.Homepage) *homepageHasManyVersionsTx {
+	return &homepageHasManyVersionsTx{a.db.Model(m).Association(a.Name())}
+}
+
+type homepageHasManyVersionsTx struct{ tx *gorm.Association }
+
+func (a homepageHasManyVersionsTx) Find() (result []*po.Version, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a homepageHasManyVersionsTx) Append(values ...*po.Version) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a homepageHasManyVersionsTx) Replace(values ...*po.Version) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a homepageHasManyVersionsTx) Delete(values ...*po.Version) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a homepageHasManyVersionsTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a homepageHasManyVersionsTx) Count() int64 {
 	return a.tx.Count()
 }
 

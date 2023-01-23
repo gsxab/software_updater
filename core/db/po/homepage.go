@@ -9,4 +9,5 @@ type Homepage struct {
 	Actions     string          `gorm:"column:version_actions;notNull;default:{}"`
 	NoUpdate    bool            `gorm:"column:no_update"`
 	Current     *CurrentVersion `gorm:"references:Name;foreignKey:Name"`
+	Versions    []*Version      `gorm:"references:Name;foreignKey:Name"`
 }

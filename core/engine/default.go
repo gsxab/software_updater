@@ -99,7 +99,7 @@ func (e *DefaultEngine) updateCurrentVersion(ctx context.Context, v *po.Version,
 	if err != nil {
 		return err
 	}
-	info, err := cvDAO.WithContext(ctx).Where(vDAO.ID.Eq(cv.ID)).UpdateSimple(cvDAO.CurrentVersionID.Value(v.ID))
+	info, err := cvDAO.WithContext(ctx).Where(vDAO.ID.Eq(cv.ID)).UpdateSimple(cvDAO.VersionID.Value(v.ID))
 	if err != nil {
 		return err
 	}

@@ -17,10 +17,10 @@ func NewListItemDTO(homepage *po.Homepage, dateFormat string) *ListItemDTO {
 	var updateAt, scheduledAt *time.Time
 	var version *string
 	if homepage.Current != nil {
-		updateAt = &homepage.Current.UpdatedAt
 		scheduledAt = homepage.Current.ScheduledAt
-		if homepage.Current.CurrentVersion != nil {
-			version = &homepage.Current.CurrentVersion.Version
+		if homepage.Current.Version != nil {
+			updateAt = homepage.Current.Version.LocalTime
+			version = &homepage.Current.Version.Version
 		}
 	}
 

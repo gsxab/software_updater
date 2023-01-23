@@ -33,12 +33,25 @@ func newCurrentVersion(db *gorm.DB, opts ...gen.DOOption) currentVersion {
 	_currentVersion.DeletedAt = field.NewField(tableName, "deleted_at")
 	_currentVersion.Name = field.NewString(tableName, "name")
 	_currentVersion.ScheduledAt = field.NewTime(tableName, "scheduled_at")
-	_currentVersion.CurrentVersionID = field.NewUint(tableName, "current_version_id")
+	_currentVersion.VersionID = field.NewUint(tableName, "version_id")
 	_currentVersion.Info = field.NewString(tableName, "info")
-	_currentVersion.CurrentVersion = currentVersionHasOneCurrentVersion{
+	_currentVersion.Version = currentVersionBelongsToVersion{
 		db: db.Session(&gorm.Session{}),
 
-		RelationField: field.NewRelation("CurrentVersion", "po.Version"),
+		RelationField: field.NewRelation("Version", "po.Version"),
+		CV: struct {
+			field.RelationField
+			Version struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("Version.CV", "po.CurrentVersion"),
+			Version: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("Version.CV.Version", "po.Version"),
+			},
+		},
 	}
 
 	_currentVersion.fillFieldMap()
@@ -49,16 +62,16 @@ func newCurrentVersion(db *gorm.DB, opts ...gen.DOOption) currentVersion {
 type currentVersion struct {
 	currentVersionDo currentVersionDo
 
-	ALL              field.Asterisk
-	ID               field.Uint
-	CreatedAt        field.Time
-	UpdatedAt        field.Time
-	DeletedAt        field.Field
-	Name             field.String
-	ScheduledAt      field.Time
-	CurrentVersionID field.Uint
-	Info             field.String
-	CurrentVersion   currentVersionHasOneCurrentVersion
+	ALL         field.Asterisk
+	ID          field.Uint
+	CreatedAt   field.Time
+	UpdatedAt   field.Time
+	DeletedAt   field.Field
+	Name        field.String
+	ScheduledAt field.Time
+	VersionID   field.Uint
+	Info        field.String
+	Version     currentVersionBelongsToVersion
 
 	fieldMap map[string]field.Expr
 }
@@ -81,7 +94,7 @@ func (c *currentVersion) updateTableName(table string) *currentVersion {
 	c.DeletedAt = field.NewField(table, "deleted_at")
 	c.Name = field.NewString(table, "name")
 	c.ScheduledAt = field.NewTime(table, "scheduled_at")
-	c.CurrentVersionID = field.NewUint(table, "current_version_id")
+	c.VersionID = field.NewUint(table, "version_id")
 	c.Info = field.NewString(table, "info")
 
 	c.fillFieldMap()
@@ -114,7 +127,7 @@ func (c *currentVersion) fillFieldMap() {
 	c.fieldMap["deleted_at"] = c.DeletedAt
 	c.fieldMap["name"] = c.Name
 	c.fieldMap["scheduled_at"] = c.ScheduledAt
-	c.fieldMap["current_version_id"] = c.CurrentVersionID
+	c.fieldMap["version_id"] = c.VersionID
 	c.fieldMap["info"] = c.Info
 
 }
@@ -129,13 +142,20 @@ func (c currentVersion) replaceDB(db *gorm.DB) currentVersion {
 	return c
 }
 
-type currentVersionHasOneCurrentVersion struct {
+type currentVersionBelongsToVersion struct {
 	db *gorm.DB
 
 	field.RelationField
+
+	CV struct {
+		field.RelationField
+		Version struct {
+			field.RelationField
+		}
+	}
 }
 
-func (a currentVersionHasOneCurrentVersion) Where(conds ...field.Expr) *currentVersionHasOneCurrentVersion {
+func (a currentVersionBelongsToVersion) Where(conds ...field.Expr) *currentVersionBelongsToVersion {
 	if len(conds) == 0 {
 		return &a
 	}
@@ -148,22 +168,22 @@ func (a currentVersionHasOneCurrentVersion) Where(conds ...field.Expr) *currentV
 	return &a
 }
 
-func (a currentVersionHasOneCurrentVersion) WithContext(ctx context.Context) *currentVersionHasOneCurrentVersion {
+func (a currentVersionBelongsToVersion) WithContext(ctx context.Context) *currentVersionBelongsToVersion {
 	a.db = a.db.WithContext(ctx)
 	return &a
 }
 
-func (a currentVersionHasOneCurrentVersion) Model(m *po.CurrentVersion) *currentVersionHasOneCurrentVersionTx {
-	return &currentVersionHasOneCurrentVersionTx{a.db.Model(m).Association(a.Name())}
+func (a currentVersionBelongsToVersion) Model(m *po.CurrentVersion) *currentVersionBelongsToVersionTx {
+	return &currentVersionBelongsToVersionTx{a.db.Model(m).Association(a.Name())}
 }
 
-type currentVersionHasOneCurrentVersionTx struct{ tx *gorm.Association }
+type currentVersionBelongsToVersionTx struct{ tx *gorm.Association }
 
-func (a currentVersionHasOneCurrentVersionTx) Find() (result *po.Version, err error) {
+func (a currentVersionBelongsToVersionTx) Find() (result *po.Version, err error) {
 	return result, a.tx.Find(&result)
 }
 
-func (a currentVersionHasOneCurrentVersionTx) Append(values ...*po.Version) (err error) {
+func (a currentVersionBelongsToVersionTx) Append(values ...*po.Version) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -171,7 +191,7 @@ func (a currentVersionHasOneCurrentVersionTx) Append(values ...*po.Version) (err
 	return a.tx.Append(targetValues...)
 }
 
-func (a currentVersionHasOneCurrentVersionTx) Replace(values ...*po.Version) (err error) {
+func (a currentVersionBelongsToVersionTx) Replace(values ...*po.Version) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -179,7 +199,7 @@ func (a currentVersionHasOneCurrentVersionTx) Replace(values ...*po.Version) (er
 	return a.tx.Replace(targetValues...)
 }
 
-func (a currentVersionHasOneCurrentVersionTx) Delete(values ...*po.Version) (err error) {
+func (a currentVersionBelongsToVersionTx) Delete(values ...*po.Version) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -187,11 +207,11 @@ func (a currentVersionHasOneCurrentVersionTx) Delete(values ...*po.Version) (err
 	return a.tx.Delete(targetValues...)
 }
 
-func (a currentVersionHasOneCurrentVersionTx) Clear() error {
+func (a currentVersionBelongsToVersionTx) Clear() error {
 	return a.tx.Clear()
 }
 
-func (a currentVersionHasOneCurrentVersionTx) Count() int64 {
+func (a currentVersionBelongsToVersionTx) Count() int64 {
 	return a.tx.Count()
 }
 
