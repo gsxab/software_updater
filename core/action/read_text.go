@@ -12,7 +12,7 @@ type ReadText struct {
 }
 
 func (a *ReadText) Path() Path {
-	return Path{"node", " reader", " read_text"}
+	return Path{"browser", "reader", "read_text"}
 }
 
 func (a *ReadText) InElmNum() int {

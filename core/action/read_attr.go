@@ -14,7 +14,7 @@ type ReadAttr struct {
 }
 
 func (r *ReadAttr) Path() Path {
-	return Path{"node", "reader", "read_attr"}
+	return Path{"browser", "reader", "read_attr"}
 }
 
 func (a *ReadAttr) InElmNum() int {
