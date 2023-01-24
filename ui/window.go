@@ -97,6 +97,7 @@ func (a *App) initGUI(ctx context.Context, fa fyne.App) error {
 		},
 	)
 	// list tool
+	listPage := listTable
 
 	// detail tab
 	a.detailName = widget.NewLabel("loading...")
@@ -163,7 +164,7 @@ func (a *App) initGUI(ctx context.Context, fa fyne.App) error {
 	columns.SetOffset(0.8)
 	detailPage := container.NewBorder(container.NewVBox(detailToolbar, detailTitle), nil, nil, nil, columns)
 
-	a.listPage = listTable
+	a.listPage = listPage
 	a.detailPage = detailPage
 	a.flowPage = canvas.NewText("Flow page", nil)
 
@@ -231,7 +232,7 @@ func (a *App) reloadDetailVersion(ctx context.Context, id int, v string) error {
 		PrevVersion: version.Previous,
 		NextVersion: nil,
 		RemoteDate:  util.FormatTime(version.RemoteDate, uiConfig.DateFormat),
-		UpdateDate:  *util.FormatTime(&version.UpdatedAt, uiConfig.DateFormat),
+		UpdateDate:  *util.FormatTime(version.LocalTime, uiConfig.DateFormat),
 		Link:        version.Link,
 		Digest:      version.Digest,
 		Picture:     version.Picture,
