@@ -7,10 +7,11 @@ import (
 )
 
 type ListItemDTO struct {
-	Name       string  `json:"name"`
-	Version    *string `json:"version"`
-	UpdateDate *string `json:"update_date"`
-	SchedDate  *string `json:"scheduled_date"`
+	Name          string  `json:"name"`
+	PageURL       string  `json:"page_url"`
+	Version       *string `json:"version"`
+	UpdateDate    *string `json:"update_date"`
+	ScheduledDate *string `json:"scheduled_date"`
 }
 
 func NewListItemDTO(homepage *po.Homepage, dateFormat string) *ListItemDTO {
@@ -25,9 +26,10 @@ func NewListItemDTO(homepage *po.Homepage, dateFormat string) *ListItemDTO {
 	}
 
 	return &ListItemDTO{
-		Name:       homepage.Name,
-		Version:    version,
-		UpdateDate: util.FormatTime(updateAt, dateFormat),
-		SchedDate:  util.FormatTime(scheduledAt, dateFormat),
+		Name:          homepage.Name,
+		PageURL:       homepage.HomepageURL,
+		Version:       version,
+		UpdateDate:    util.FormatTime(updateAt, dateFormat),
+		ScheduledDate: util.FormatTime(scheduledAt, dateFormat),
 	}
 }
