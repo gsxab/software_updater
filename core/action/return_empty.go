@@ -15,7 +15,7 @@ func (a *ReturnEmpty) Path() Path {
 	return Path{"basic", "value_gen", "return_empty"}
 }
 
-func (a *ReturnEmpty) Do(ctx context.Context, driver selenium.WebDriver, input *Args, version *po.Version, wg *sync.WaitGroup) (output *Args, exit Result, err error) {
+func (a *ReturnEmpty) Do(context.Context, selenium.WebDriver, *Args, *po.Version, *sync.WaitGroup) (output *Args, exit Result, err error) {
 	return
 }
 

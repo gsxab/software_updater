@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/tebeka/selenium"
 	"software_updater/core/db/po"
+	"software_updater/core/logs"
 	"sync"
 )
 
@@ -21,9 +22,10 @@ func (a *CSSSelect) OutElmNum() int {
 	return 1
 }
 
-func (a *CSSSelect) Do(ctx context.Context, driver selenium.WebDriver, input *Args, version *po.Version, wg *sync.WaitGroup) (output *Args, exit Result, err error) {
+func (a *CSSSelect) Do(ctx context.Context, driver selenium.WebDriver, input *Args, _ *po.Version, _ *sync.WaitGroup) (output *Args, exit Result, err error) {
 	element, err := driver.FindElement(selenium.ByCSSSelector, a.Selector)
 	if err != nil {
+		logs.Error(ctx, "selenium element finding failed", err, "selector", a.Selector)
 		return
 	}
 	output = ElementToArgs(element, input)

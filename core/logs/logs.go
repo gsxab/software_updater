@@ -56,8 +56,23 @@ func makeBasicLogFunc(f func(context.Context, ...any)) func(ctx context.Context,
 	}
 }
 
+func makeMsgLogFunc(f func(context.Context, ...any)) func(ctx context.Context, msg string, kvs ...any) {
+	return func(ctx context.Context, msg string, kvs ...any) {
+		kvs = append([]any{"msg", msg}, kvs...)
+		f(ctx, kvs...)
+	}
+}
+
 func makeErrLogFunc(f func(context.Context, ...any)) func(ctx context.Context, err error, kvs ...any) {
 	return func(ctx context.Context, err error, kvs ...any) {
+		kvs = append(kvs, "err", err.Error())
+		f(ctx, kvs...)
+	}
+}
+
+func makeMsgErrLogFunc(f func(context.Context, ...any)) func(ctx context.Context, msg string, err error, kvs ...any) {
+	return func(ctx context.Context, msg string, err error, kvs ...any) {
+		kvs = append([]any{"msg", msg}, kvs...)
 		kvs = append(kvs, "err", err.Error())
 		f(ctx, kvs...)
 	}
@@ -70,13 +85,23 @@ var (
 	infoLogger  = makeKvLogFunc(InfoLevel, infoLog)
 	debugLogger = makeKvLogFunc(DebugLevel, debugLog)
 
-	Error = makeBasicLogFunc(errorLogger)
-	Warn  = makeBasicLogFunc(warnLogger)
-	Info  = makeBasicLogFunc(infoLogger)
-	Debug = makeBasicLogFunc(debugLogger)
+	ErrorR = makeBasicLogFunc(errorLogger)
+	WarnR  = makeBasicLogFunc(warnLogger)
+	InfoR  = makeBasicLogFunc(infoLogger)
+	DebugR = makeBasicLogFunc(debugLogger)
+
+	ErrorM = makeMsgLogFunc(errorLogger)
+	WarnM  = makeMsgLogFunc(warnLogger)
+	InfoM  = makeMsgLogFunc(infoLogger)
+	DebugM = makeMsgLogFunc(debugLogger)
 
 	ErrorE = makeErrLogFunc(errorLogger)
 	WarnE  = makeErrLogFunc(warnLogger)
 	InfoE  = makeErrLogFunc(infoLogger)
 	DebugE = makeErrLogFunc(debugLogger)
+
+	Error = makeMsgErrLogFunc(errorLogger)
+	Warn  = makeMsgErrLogFunc(warnLogger)
+	Info  = makeMsgErrLogFunc(infoLogger)
+	Debug = makeMsgErrLogFunc(debugLogger)
 )

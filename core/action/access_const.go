@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/tebeka/selenium"
 	"software_updater/core/db/po"
+	"software_updater/core/logs"
 	"sync"
 )
 
@@ -21,8 +22,12 @@ func (a *AccessConst) OutElmNum() int {
 	return 0
 }
 
-func (a *AccessConst) Do(ctx context.Context, driver selenium.WebDriver, input *Args, version *po.Version, wg *sync.WaitGroup) (output *Args, exit Result, err error) {
+func (a *AccessConst) Do(ctx context.Context, driver selenium.WebDriver, _ *Args, _ *po.Version, _ *sync.WaitGroup) (output *Args, exit Result, err error) {
 	err = driver.Get(a.URL)
+	if err != nil {
+		logs.Error(ctx, "selenium url access failed", err, "URL", a.URL)
+		return
+	}
 	return
 }
 

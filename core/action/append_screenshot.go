@@ -9,6 +9,7 @@ import (
 	"path"
 	"software_updater/core/config"
 	"software_updater/core/db/po"
+	"software_updater/core/logs"
 	"sync"
 	"time"
 )
@@ -32,14 +33,17 @@ func (a *AppendScreenshot) getFilename(name string) string {
 	return encodedName + "@" + dateSuffix + ".png"
 }
 
-func (a *AppendScreenshot) Do(_ context.Context, driver selenium.WebDriver, input *Args, version *po.Version, wg *sync.WaitGroup) (output *Args, exit Result, err error) {
+func (a *AppendScreenshot) Do(ctx context.Context, driver selenium.WebDriver, input *Args, version *po.Version, _ *sync.WaitGroup) (output *Args, exit Result, err error) {
 	bytes, err := driver.Screenshot()
 	if err != nil {
+		logs.Error(ctx, "selenium screenshot failed", err)
 		return
 	}
 	filename := a.getFilename(version.Name)
-	err = os.WriteFile(path.Join(config.Current().Files.ScreenshotDir, filename), bytes, fs.FileMode(0o644))
+	pathname := path.Join(config.Current().Files.ScreenshotDir, filename)
+	err = os.WriteFile(pathname, bytes, fs.FileMode(0o644))
 	if err != nil {
+		logs.Error(ctx, "screenshot saving failed", err, "filename", filename, "pathname", pathname)
 		return
 	}
 	output = AnotherStringToArgs(filename, input)

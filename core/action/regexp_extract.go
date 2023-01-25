@@ -27,8 +27,8 @@ func (a *RegexpExtract) Init(context.Context, *sync.WaitGroup) (err error) {
 	return
 }
 
-func (a *RegexpExtract) Do(ctx context.Context, driver selenium.WebDriver, input *Args, version *po.Version, wg *sync.WaitGroup) (output *Args, exit Result, err error) {
-	return a.MutateWithErr(input, func(text string) (string, error) {
+func (a *RegexpExtract) Do(ctx context.Context, _ selenium.WebDriver, input *Args, _ *po.Version, _ *sync.WaitGroup) (output *Args, exit Result, err error) {
+	return a.MutateWithErr(ctx, input, func(text string) (string, error) {
 		matched, result := util.MatchExtract(a.matcher, a.FullMatch, text)
 		if !matched {
 			return result, fmt.Errorf("matching failed, pattern: %s, text: %s", a.Pattern, text)

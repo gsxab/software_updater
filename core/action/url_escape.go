@@ -17,7 +17,7 @@ func (a *URLEscape) Path() Path {
 	return Path{"string", "mutator", "url_escape"}
 }
 
-func (a *URLEscape) Do(ctx context.Context, driver selenium.WebDriver, input *Args, version *po.Version, wg *sync.WaitGroup) (output *Args, exit Result, err error) {
+func (a *URLEscape) Do(_ context.Context, _ selenium.WebDriver, input *Args, _ *po.Version, _ *sync.WaitGroup) (output *Args, exit Result, err error) {
 	return a.Mutate(input, func(text string) string {
 		return url.QueryEscape(text)
 	})

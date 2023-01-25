@@ -128,12 +128,12 @@ func (a *App) initGUI(ctx context.Context, fa fyne.App) error {
 						fieldButton.OnTapped = func() {
 							targetURL, err := url.Parse(valTarget)
 							if err != nil {
-								logs.ErrorE(ctx, err, "url", valTarget)
+								logs.Error(ctx, "parse url failed", err, "url", valTarget)
 								return
 							}
 							err = fa.OpenURL(targetURL)
 							if err != nil {
-								logs.ErrorE(ctx, err, "url", valTarget)
+								logs.Error(ctx, "open url failed", err, "url", valTarget)
 								return
 							}
 						}
@@ -154,11 +154,11 @@ func (a *App) initGUI(ctx context.Context, fa fyne.App) error {
 	a.detailToolNext = widget.NewToolbarAction(theme.NavigateNextIcon(), func() {})
 	detailToolRefresh := widget.NewToolbarAction(theme.ViewRefreshIcon(), func() {})
 	detailToolDownload := widget.NewToolbarAction(theme.DownloadIcon(), func() {})
+	detailToolEdit := widget.NewToolbarAction(theme.DocumentCreateIcon(), func() {})
 	detailToolbar := widget.NewToolbar(
-		a.detailToolLast,
-		a.detailToolNext,
+		a.detailToolLast, a.detailToolNext,
 		widget.NewToolbarSeparator(),
-		detailToolRefresh, detailToolDownload,
+		detailToolRefresh, detailToolDownload, detailToolEdit,
 	)
 	columns := container.NewHSplit(detailList, container.NewScroll(a.detailPic))
 	columns.SetOffset(0.8)
@@ -220,7 +220,7 @@ func (a *App) reloadDetailVersion(ctx context.Context, id int, v string) error {
 	name := a.listData[id].Name
 	version, err := vDAO.WithContext(ctx).Where(vDAO.Name.Eq(name), vDAO.Version.Eq(v)).Take()
 	if err != nil {
-		logs.ErrorE(ctx, err, "name", name, "v", v)
+		logs.Error(ctx, "version query failed", err, "name", name, "v", v)
 		return err
 	}
 	a.rootTab.EnableIndex(1)
@@ -242,21 +242,21 @@ func (a *App) reloadDetailVersion(ctx context.Context, id int, v string) error {
 		pathname := path.Join(config.Current().Files.ScreenshotDir, filename)
 		file, err := os.Open(pathname)
 		if err != nil {
-			logs.ErrorE(ctx, err, "filename", filename, "pathname", pathname)
+			logs.Error(ctx, "file opening failed", err, "filename", filename, "pathname", pathname)
 			return err
 		}
 		img, _, err := image.Decode(file)
 		if err != nil {
-			logs.ErrorE(ctx, err, "filename", filename, "pathname", pathname)
+			logs.Error(ctx, "image decoding failed", err, "filename", filename, "pathname", pathname)
 			return err
 		}
 		a.detailPic.Resource, err = fyne.LoadResourceFromPath(pathname)
-		width := float32(480) // a.detailPic.MinSize().Width
-		a.detailPic.SetMinSize(fyne.Size{Width: width, Height: float32(img.Bounds().Dy()) * width / float32(img.Bounds().Dx())})
 		if err != nil {
-			logs.ErrorE(ctx, err, "filename", filename, "pathname", pathname)
+			logs.Error(ctx, "image loading failed", err, "filename", filename, "pathname", pathname)
 			return err
 		}
+		width := float32(480) // a.detailPic.MinSize().Width
+		a.detailPic.SetMinSize(fyne.Size{Width: width, Height: float32(img.Bounds().Dy()) * width / float32(img.Bounds().Dx())})
 	}
 	if version.Previous != nil {
 		a.detailData.PrevVersion = version.Previous
@@ -272,13 +272,13 @@ func (a *App) reloadDetailVersion(ctx context.Context, id int, v string) error {
 
 	nextVersionExist, err := vDAO.WithContext(ctx).Where(vDAO.Name.Eq(name), vDAO.Previous.Eq(v)).Count()
 	if err != nil {
-		logs.ErrorE(ctx, err, "name", name, "v", v)
+		logs.Error(ctx, "version query failed", err, "name", name, "v", v)
 		return err
 	}
 	if nextVersionExist > 0 {
 		nextVersion, err := vDAO.WithContext(ctx).Where(vDAO.Name.Eq(name), vDAO.Previous.Eq(v)).Take()
 		if err != nil {
-			logs.ErrorE(ctx, err, "name", name, "v", v)
+			logs.Error(ctx, "version query failed", err, "name", name, "v", v)
 			return err
 		}
 

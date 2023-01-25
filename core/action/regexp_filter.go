@@ -6,6 +6,7 @@ import (
 	"github.com/tebeka/selenium"
 	"regexp"
 	"software_updater/core/db/po"
+	"software_updater/core/logs"
 	"software_updater/core/util"
 	"sync"
 )
@@ -41,12 +42,13 @@ func (a *RegexpFilter) Init(context.Context, *sync.WaitGroup) (err error) {
 	return
 }
 
-func (a *RegexpFilter) Do(ctx context.Context, driver selenium.WebDriver, input *Args, version *po.Version, wg *sync.WaitGroup) (output *Args, exit Result, err error) {
+func (a *RegexpFilter) Do(ctx context.Context, _ selenium.WebDriver, input *Args, _ *po.Version, _ *sync.WaitGroup) (output *Args, exit Result, err error) {
 	elements := input.Elements
 	var text string
 	for _, element := range elements {
 		text, err = element.Text()
 		if err != nil {
+			logs.Error(ctx, "selenium element get_text failed", err)
 			return
 		}
 		if a.matcher != nil {
@@ -58,6 +60,7 @@ func (a *RegexpFilter) Do(ctx context.Context, driver selenium.WebDriver, input 
 		}
 	}
 	err = fmt.Errorf("find matching element failed, matcher: %s, elements: %v", a.Pattern, elements)
+	logs.Error(ctx, "element matching failed", err)
 	return
 }
 

@@ -39,4 +39,5 @@ const (
 	Cancelled               // action cancelled before exiting
 	Again                   // action exited, and needs running again
 	StopFlow                // action exited, and needs current flow to stop
+	Skipped                 // action exited, for checking actions, no need to check
 )

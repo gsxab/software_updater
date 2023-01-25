@@ -118,6 +118,10 @@ func (j *DefaultJob) RunAction(ctx context.Context, driver selenium.WebDriver, a
 		j.state = Success
 	case action.Finished:
 		j.state = Success
+	case action.Skipped:
+		j.state = Skipped
+	default:
+		errs.Collect(fmt.Errorf("invalid action state: %d", result))
 	}
 	return
 }

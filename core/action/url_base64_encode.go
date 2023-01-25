@@ -17,7 +17,7 @@ func (a *URLBase64Encode) Path() Path {
 	return Path{"encoder", "rfc4648", "url_base64_encode"}
 }
 
-func (a *URLBase64Encode) Do(ctx context.Context, driver selenium.WebDriver, input *Args, version *po.Version, wg *sync.WaitGroup) (output *Args, exit Result, err error) {
+func (a *URLBase64Encode) Do(_ context.Context, _ selenium.WebDriver, input *Args, _ *po.Version, _ *sync.WaitGroup) (output *Args, exit Result, err error) {
 	return a.Mutate(input, func(text string) string {
 		return base64.URLEncoding.EncodeToString([]byte(text))
 	})

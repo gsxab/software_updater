@@ -1,6 +1,8 @@
 package action
 
 import (
+	"context"
+	"software_updater/core/logs"
 	"software_updater/core/util"
 	"software_updater/core/util/error_util"
 )
@@ -27,11 +29,13 @@ func (a *StringMutator) Mutate(input *Args, mutate func(text string) string) (ou
 	return
 }
 
-func (a *StringMutator) MutateWithErr(input *Args, mutate func(text string) (string, error)) (output *Args, exit Result, err error) {
+func (a *StringMutator) MutateWithErr(ctx context.Context, input *Args, mutate func(text string) (string, error)) (output *Args, exit Result, err error) {
 	errs := error_util.NewCollector()
 	output, exit, err = a.Mutate(input, func(text string) string {
 		result, err := mutate(text)
-		errs.Collect(err)
+		errs.CollectWithLog(err, func(err error) {
+			logs.Error(ctx, "string mutating failed", err, "input", text)
+		})
 		return result
 	})
 	errs.Collect(err)

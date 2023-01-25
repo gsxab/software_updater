@@ -24,7 +24,7 @@ func (a *ReduceFormat) OutStrNum() int {
 	return 1 + len(a.Skip)
 }
 
-func (a *ReduceFormat) Do(ctx context.Context, driver selenium.WebDriver, input *Args, version *po.Version, wg *sync.WaitGroup) (output *Args, exit Result, err error) {
+func (a *ReduceFormat) Do(_ context.Context, _ selenium.WebDriver, input *Args, _ *po.Version, _ *sync.WaitGroup) (output *Args, exit Result, err error) {
 	results := make([]string, 1, len(input.Strings)+1)
 	skipIndex := 0
 	texts := make([]any, 1, len(input.Strings)+1)
