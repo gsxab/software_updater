@@ -1,4 +1,4 @@
-package ui
+package client
 
 import (
 	"context"
@@ -14,11 +14,11 @@ import (
 	"os"
 	"path"
 	"software_updater/core/config"
-	"software_updater/core/db/dao"
 	"software_updater/core/db/po"
 	"software_updater/core/job"
 	"software_updater/core/logs"
-	"software_updater/core/util"
+	"software_updater/core/util/optional"
+	"software_updater/ui/common"
 	"software_updater/ui/dto"
 )
 
@@ -75,9 +75,9 @@ func (a *App) initGUI(ctx context.Context, fa fyne.App) error {
 		func(id widget.ListItemID, object fyne.CanvasObject) {
 			objects := object.(*fyne.Container).Objects
 			objects[0].(*widget.Label).SetText(a.listData[id].Name)
-			objects[1].(*widget.Label).SetText(util.Default(a.listData[id].Version, "(no information available)"))
-			objects[2].(*widget.Label).SetText(util.Default(a.listData[id].UpdateDate, "(not updated)"))
-			objects[3].(*widget.Label).SetText(util.Default(a.listData[id].ScheduledDate, "(not scheduled)"))
+			objects[1].(*widget.Label).SetText(optional.ValueOr(a.listData[id].Version, "(no information available)"))
+			objects[2].(*widget.Label).SetText(optional.ValueOr(a.listData[id].UpdateDate, "(not updated)"))
+			objects[3].(*widget.Label).SetText(optional.ValueOr(a.listData[id].ScheduledDate, "(not scheduled)"))
 
 			buttons := objects[4].(*fyne.Container).Objects
 			if a.listData[id].Version != nil {
@@ -180,31 +180,9 @@ func (a *App) initGUI(ctx context.Context, fa fyne.App) error {
 	return nil
 }
 
-func (a *App) reloadListData(ctx context.Context) error {
-	hpDAO := dao.Homepage
-	cvDAO := dao.CurrentVersion
-	vDAO := dao.Version
-
-	data := make([]*dto.ListItemDTO, 0)
-	homepages, err := hpDAO.WithContext(ctx).Order(hpDAO.Name).Find()
-	if err != nil {
-		return err
-	}
-	for _, homepage := range homepages {
-		homepage.Current, err = cvDAO.WithContext(ctx).Where(cvDAO.Name.Eq(homepage.Name)).Take()
-		if err != nil {
-			return err
-		}
-		if homepage.Current != nil {
-			homepage.Current.Version, err = vDAO.WithContext(ctx).Where(vDAO.ID.Eq(homepage.Current.VersionID)).Take()
-			if err != nil {
-				return err
-			}
-		}
-		data = append(data, dto.NewListItemDTO(homepage, uiConfig.DateFormat))
-	}
-	a.listData = data
-	return nil
+func (a *App) reloadListData(ctx context.Context) (err error) {
+	a.listData, err = common.GetList(ctx, clientUIConfig.DateFormat)
+	return err
 }
 
 func (a *App) selectDetailVersion(ctx context.Context, id int) error {
@@ -212,31 +190,18 @@ func (a *App) selectDetailVersion(ctx context.Context, id int) error {
 }
 
 func (a *App) reloadDetailVersion(ctx context.Context, id int, v string) error {
-	vDAO := dao.Version
-
 	a.rootTab.DisableIndex(1)
 	a.rootTab.DisableIndex(2)
 
 	name := a.listData[id].Name
-	version, err := vDAO.WithContext(ctx).Where(vDAO.Name.Eq(name), vDAO.Version.Eq(v)).Take()
+	page := a.listData[id].PageURL
+
+	version, err := common.GetVersionDetail(ctx, name, &page, v, clientUIConfig.DateFormat)
 	if err != nil {
-		logs.Error(ctx, "version query failed", err, "name", name, "v", v)
 		return err
 	}
-	a.rootTab.EnableIndex(1)
 
-	a.detailData = &dto.VersionDTO{
-		Name:        name,
-		PageURL:     a.listData[id].PageURL,
-		Version:     v,
-		PrevVersion: version.Previous,
-		NextVersion: nil,
-		RemoteDate:  util.FormatTime(version.RemoteDate, uiConfig.DateFormat),
-		UpdateDate:  *util.FormatTime(version.LocalTime, uiConfig.DateFormat),
-		Link:        version.Link,
-		Digest:      version.Digest,
-		Picture:     version.Picture,
-	}
+	a.rootTab.EnableIndex(1)
 	if version.Picture != nil {
 		filename := *version.Picture
 		pathname := path.Join(config.Current().Files.ScreenshotDir, filename)
@@ -258,35 +223,21 @@ func (a *App) reloadDetailVersion(ctx context.Context, id int, v string) error {
 		width := float32(480) // a.detailPic.MinSize().Width
 		a.detailPic.SetMinSize(fyne.Size{Width: width, Height: float32(img.Bounds().Dy()) * width / float32(img.Bounds().Dx())})
 	}
-	if version.Previous != nil {
-		a.detailData.PrevVersion = version.Previous
+	if version.PrevVersion != nil {
 		a.detailToolNext.OnActivated = func() {
-			err = a.reloadDetailVersion(ctx, id, *version.Previous)
+			err = a.reloadDetailVersion(ctx, id, *version.PrevVersion)
 			if err != nil {
-				logs.ErrorE(ctx, err, "id", id, "version", *version.Previous)
+				logs.ErrorE(ctx, err, "id", id, "version", *version.PrevVersion)
 			}
 		}
 	} else {
 		a.detailToolNext.OnActivated = func() {}
 	}
-
-	nextVersionExist, err := vDAO.WithContext(ctx).Where(vDAO.Name.Eq(name), vDAO.Previous.Eq(v)).Count()
-	if err != nil {
-		logs.Error(ctx, "version query failed", err, "name", name, "v", v)
-		return err
-	}
-	if nextVersionExist > 0 {
-		nextVersion, err := vDAO.WithContext(ctx).Where(vDAO.Name.Eq(name), vDAO.Previous.Eq(v)).Take()
-		if err != nil {
-			logs.Error(ctx, "version query failed", err, "name", name, "v", v)
-			return err
-		}
-
-		a.detailData.NextVersion = &nextVersion.Version
+	if version.NextVersion != nil {
 		a.detailToolNext.OnActivated = func() {
-			err = a.reloadDetailVersion(ctx, id, nextVersion.Version)
+			err = a.reloadDetailVersion(ctx, id, *version.NextVersion)
 			if err != nil {
-				logs.ErrorE(ctx, err, "id", id, "version", nextVersion.Version)
+				logs.ErrorE(ctx, err, "id", id, "version", *version.NextVersion)
 			}
 		}
 	} else {
@@ -325,9 +276,9 @@ func (a *App) fillDetailVal() {
 func InitAndRun(ctx context.Context, configExtraUI string) error {
 	var err error
 
-	uiConfig = DefaultConfig()
+	clientUIConfig = DefaultConfig()
 	if configExtraUI != "" {
-		err = json.Unmarshal([]byte(configExtraUI), uiConfig)
+		err = json.Unmarshal([]byte(configExtraUI), clientUIConfig)
 		if err != nil {
 			return err
 		}

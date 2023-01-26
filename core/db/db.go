@@ -49,3 +49,7 @@ func InitDB(conf *config.DatabaseConfig) (err error) {
 
 	return nil
 }
+
+func DB() *gorm.DB {
+	return db
+}

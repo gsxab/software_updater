@@ -1,11 +1,11 @@
-package ui
+package client
 
 type Config struct {
 	DateFormat string `json:"date_format"`
 	TimeFormat string `json:"time_format"`
 }
 
-var uiConfig *Config
+var clientUIConfig *Config
 
 func DefaultConfig() *Config {
 	return &Config{

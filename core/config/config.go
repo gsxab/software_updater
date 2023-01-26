@@ -59,6 +59,7 @@ func DefaultConfig() *Config {
 			DebugLog:    false,
 			DebugCheck:  false,
 		},
+		Extra: make(map[string]string),
 	}
 }
 

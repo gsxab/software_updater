@@ -6,8 +6,10 @@ import (
 	"software_updater/core/config"
 	"software_updater/core/db"
 	"software_updater/core/engine"
+	"software_updater/core/logs"
 	"software_updater/core/tools/web"
-	"software_updater/ui"
+	"software_updater/ui/client"
+	"software_updater/ui/webui"
 )
 
 func main() {
@@ -34,12 +36,21 @@ func main() {
 		log.Panic(err)
 	}
 
-	if disableUI := conf.Extra["disable_ui"]; disableUI != "true" {
-		err = ui.InitAndRun(context.Background(), conf.Extra["ui"])
+	uiMode := conf.Extra["ui_mode"]
+	switch uiMode {
+	case "client":
+		logs.WarnM(context.Background(), "client ui selected, which is not fully usable in current version!!!")
+		err = client.InitAndRun(context.Background(), conf.Extra["client_ui_setting"])
 		if err != nil {
 			log.Panic(err)
 		}
-	} else {
+	case "", "web":
+		logs.InfoM(context.Background(), "web ui selected")
+		err = webui.InitAndRun(context.Background(), conf.Extra["web_ui_setting"])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "off":
 		err = e.CrawlAll(context.Background())
 		if err != nil {
 			log.Panic(err)
