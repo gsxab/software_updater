@@ -32,6 +32,14 @@ type DTO struct {
 	Values   map[string]string `json:"values,omitempty"`
 }
 
+type HierarchyDTO struct {
+	Name     string          `json:"name"`
+	Path     string          `json:"path"`
+	Level    int             `json:"level"`
+	Leaf     bool            `json:"leaf"`
+	Children []*HierarchyDTO `json:"children,omitempty"`
+}
+
 type Result int
 
 const (

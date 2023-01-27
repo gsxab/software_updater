@@ -14,6 +14,7 @@ type ActionTrie interface {
 	PutHook(action.Path, hook.Event, hook.Hook, *hook.Position) error
 	PutHookLeaf(action.Path, hook.Event, hook.Hook, *hook.Position) error
 	PutFactLeaf(action.Path, action.Factory) (action.Factory, error)
+	DTO() (*action.HierarchyDTO, error)
 }
 
 func NewActionTrie() ActionTrie {
@@ -163,6 +164,10 @@ func (a *ActionTrieImpl) PutFactLeaf(keys action.Path, factory action.Factory) (
 	return node.SetContent(factory), nil
 }
 
+func (a *ActionTrieImpl) DTO() (*action.HierarchyDTO, error) {
+	return a.SubTreeDTO(0), nil
+}
+
 type ActionTrieNode interface {
 	Path() string
 	SetPath(path string) error
@@ -173,6 +178,7 @@ type ActionTrieNode interface {
 	Children() map[string]ActionTrieNode
 	Child(key string) (ActionTrieNode, error)
 	AddChild(key string, node ActionTrieNode) error
+	SubTreeDTO(int) *action.HierarchyDTO
 }
 
 type ActionTrieNodeBase struct {
@@ -233,6 +239,21 @@ func (a *ActionTrieInternalNode) AddChild(key string, node ActionTrieNode) error
 	return nil
 }
 
+func (a *ActionTrieInternalNode) SubTreeDTO(level int) *action.HierarchyDTO {
+	result := &action.HierarchyDTO{
+		Name:  a.path[strings.LastIndex(a.path, action.Delim)+1:],
+		Path:  a.Path(),
+		Level: level,
+		Leaf:  false,
+	}
+	children := make([]*action.HierarchyDTO, 0, len(a.children))
+	for _, child := range a.children {
+		children = append(children, child.SubTreeDTO(level+1))
+	}
+	result.Children = children
+	return result
+}
+
 type ActionTrieLeaf struct {
 	ActionTrieNodeBase
 	factory action.Factory
@@ -262,4 +283,14 @@ func (a *ActionTrieLeaf) Child(string) (ActionTrieNode, error) {
 
 func (a *ActionTrieLeaf) AddChild(string, ActionTrieNode) error {
 	panic("accessing a leaf as an internal node")
+}
+
+func (a *ActionTrieLeaf) SubTreeDTO(level int) *action.HierarchyDTO {
+	result := &action.HierarchyDTO{
+		Name:  a.path[strings.LastIndex(a.path, action.Delim)+1:],
+		Path:  a.path,
+		Level: level,
+		Leaf:  true,
+	}
+	return result
 }

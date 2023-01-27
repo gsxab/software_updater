@@ -37,13 +37,16 @@ func InitAndRun(ctx context.Context, configExtraUI string) error {
 	// version
 	g.GET("/version", GetVersion)
 	// action
-	//g.GET("/action", getActionTree)
+	g.GET("/action", GetActionTree)
 	// flow
 	//g.GET("/flow", getFlow)
-	//g.GET("/flow/realtime", getFlowRealTime)
+	//g.GET("/flow/realtime", getRealTimeFlow)
 	//g.GET("/flow/job", getJob)
 	//g.PUT("/flow", putFlow)
 	//g.DELETE("/flow/job", deleteFlow)
+	// flow state
+	//g.POST("/flow/start", startFlow)
+	//g.POST("/flow/cancel", cancelFlow)
 
 	srv := &http.Server{
 		Addr:         webUIConfig.Addr,

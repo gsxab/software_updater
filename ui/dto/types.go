@@ -6,4 +6,5 @@ import (
 )
 
 type ActionDTO = action.DTO
+type ActionHierarchyDTO = action.HierarchyDTO
 type JobDTO = job.DTO

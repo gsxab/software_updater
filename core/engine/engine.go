@@ -16,6 +16,7 @@ type Engine interface {
 	Crawl(ctx context.Context, homepage *po.Homepage) error
 	Load(ctx context.Context, homepage *po.Homepage) (*job.Flow, error)
 	CrawlAll(ctx context.Context) error
+	ActionHierarchy(ctx context.Context) (*action.HierarchyDTO, error)
 }
 
 var engine Engine

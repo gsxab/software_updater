@@ -10,7 +10,7 @@ import (
 )
 
 func GetVersionDetail(ctx context.Context, name string, optionalPage *string, v string, dateFormat string) (*dto.VersionDTO, error) {
-	page, err := optional.ValueOrLazy(optionalPage, func() (string, error) {
+	page, err := optional.OrLazy(optionalPage, func() (string, error) {
 		hpDAO := dao.Homepage
 		hp, err := hpDAO.WithContext(ctx).Where(hpDAO.Name.Eq(name)).Take()
 		if err != nil {

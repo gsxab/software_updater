@@ -111,3 +111,7 @@ func (e *DefaultEngine) updateCurrentVersion(ctx context.Context, v *po.Version,
 	}
 	return
 }
+
+func (e *DefaultEngine) ActionHierarchy(ctx context.Context) (*action.HierarchyDTO, error) {
+	return e.actionManager.categories.DTO()
+}

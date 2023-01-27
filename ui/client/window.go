@@ -75,9 +75,9 @@ func (a *App) initGUI(ctx context.Context, fa fyne.App) error {
 		func(id widget.ListItemID, object fyne.CanvasObject) {
 			objects := object.(*fyne.Container).Objects
 			objects[0].(*widget.Label).SetText(a.listData[id].Name)
-			objects[1].(*widget.Label).SetText(optional.ValueOr(a.listData[id].Version, "(no information available)"))
-			objects[2].(*widget.Label).SetText(optional.ValueOr(a.listData[id].UpdateDate, "(not updated)"))
-			objects[3].(*widget.Label).SetText(optional.ValueOr(a.listData[id].ScheduledDate, "(not scheduled)"))
+			objects[1].(*widget.Label).SetText(optional.Or(a.listData[id].Version, "(no information available)"))
+			objects[2].(*widget.Label).SetText(optional.Or(a.listData[id].UpdateDate, "(not updated)"))
+			objects[3].(*widget.Label).SetText(optional.Or(a.listData[id].ScheduledDate, "(not scheduled)"))
 
 			buttons := objects[4].(*fyne.Container).Objects
 			if a.listData[id].Version != nil {
