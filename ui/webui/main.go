@@ -8,48 +8,26 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"software_updater/core/config"
 	"software_updater/core/logs"
+	"software_updater/ui/webui/config"
 	"syscall"
 	"time"
 )
 
 func InitAndRun(ctx context.Context, configExtraUI string) error {
-	webUIConfig = DefaultConfig()
+	config.WebUIConfig = config.DefaultConfig()
 	if configExtraUI != "" {
-		err := json.Unmarshal([]byte(configExtraUI), webUIConfig)
+		err := json.Unmarshal([]byte(configExtraUI), config.WebUIConfig)
 		if err != nil {
 			return err
 		}
 	}
 
 	r := gin.Default()
-
-	// screenshots
-	r.StaticFS("/static/screenshot", http.Dir(config.Current().Files.ScreenshotDir))
-	// generated html
-	r.StaticFS("/static/html", http.Dir(config.Current().Files.HTMLDir))
-
-	// rpc
-	g := r.Group("/jsonrpc/v1", checkRPCSecret)
-	// list
-	g.GET("/list", GetList)
-	// version
-	g.GET("/version", GetVersion)
-	// action
-	g.GET("/action", GetActionTree)
-	// flow
-	//g.GET("/flow", getFlow)
-	//g.GET("/flow/realtime", getRealTimeFlow)
-	//g.GET("/flow/job", getJob)
-	//g.PUT("/flow", putFlow)
-	//g.DELETE("/flow/job", deleteFlow)
-	// flow state
-	//g.POST("/flow/start", startFlow)
-	//g.POST("/flow/cancel", cancelFlow)
+	RegisterRouters(r)
 
 	srv := &http.Server{
-		Addr:         webUIConfig.Addr,
+		Addr:         config.WebUIConfig.Addr,
 		Handler:      r,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,

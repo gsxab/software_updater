@@ -1,4 +1,4 @@
-package webui
+package config
 
 type Config struct {
 	Secret     *string `json:"secret,omitempty"`
@@ -7,7 +7,7 @@ type Config struct {
 	TimeFormat string  `json:"time_format"`
 }
 
-var webUIConfig *Config
+var WebUIConfig *Config
 
 func DefaultConfig() *Config {
 	return &Config{
