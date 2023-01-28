@@ -61,3 +61,34 @@ type DTO struct {
 	StateDesc string      `json:"state_desc"`
 	DebugInfo *DebugInfo  `json:"debug_info"`
 }
+
+type BranchDTO struct {
+	Jobs []*DTO       `json:"jobs"`
+	Next []*BranchDTO `json:"next"`
+}
+
+type FlowDTO struct {
+	Branch *BranchDTO `json:"branch"`
+}
+
+func (f *Flow) ToDTO() *FlowDTO {
+	return &FlowDTO{Branch: f.makeBranchDTO(f.Root)}
+}
+
+func (f *Flow) makeBranchDTO(b *Branch) *BranchDTO {
+	result := &BranchDTO{}
+
+	jobDTOs := make([]*DTO, 0, len(b.Jobs))
+	for _, job := range b.Jobs {
+		jobDTOs = append(jobDTOs, job.ToDTO())
+	}
+	result.Jobs = jobDTOs
+
+	nextDTOs := make([]*BranchDTO, 0, len(b.Next))
+	for _, branch := range b.Next {
+		nextDTOs = append(nextDTOs, f.makeBranchDTO(branch))
+	}
+	result.Next = nextDTOs
+
+	return result
+}

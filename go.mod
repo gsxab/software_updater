@@ -5,6 +5,8 @@ go 1.18
 require (
 	fyne.io/fyne/v2 v2.3.0
 	github.com/andelf/go-curl v0.0.0-20200630032108-fd49ff24ed97
+	github.com/gin-gonic/gin v1.8.2
+	github.com/hashicorp/golang-lru/v2 v2.0.1
 	github.com/tebeka/selenium v0.9.10-0.20211105214847-e9100b7f5ac1
 	golang.org/x/net v0.4.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -25,7 +27,6 @@ require (
 	github.com/fyne-io/glfw-js v0.0.0-20220120001248-ee7290d23504 // indirect
 	github.com/fyne-io/image v0.0.0-20220602074514-4956b0afb3d2 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/gin-gonic/gin v1.8.2 // indirect
 	github.com/go-gl/gl v0.0.0-20211210172815-726fda9656d6 // indirect
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20221017161538-93cebf72946b // indirect
 	github.com/go-playground/locales v0.14.0 // indirect

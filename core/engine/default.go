@@ -3,6 +3,7 @@ package engine
 import (
 	"context"
 	"fmt"
+	cache "github.com/hashicorp/golang-lru/v2"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
 	"software_updater/core/config"
@@ -18,14 +19,21 @@ import (
 type DefaultEngine struct {
 	actionManager *ActionManager
 	jobManager    *JobManager
+	activeFlows   *cache.Cache[string, *job.Flow]
 	config        *config.EngineConfig
 	driver        selenium.WebDriver
 }
 
-func (e *DefaultEngine) InitEngine(engineConfig *config.EngineConfig) {
+func (e *DefaultEngine) InitEngine(engineConfig *config.EngineConfig) error {
+	var err error
+	e.activeFlows, err = cache.New[string, *job.Flow](16)
+	if err != nil {
+		return nil
+	}
 	e.actionManager = NewActionManager()
 	e.config = engineConfig
 	e.driver = web.Driver()
+	return nil
 }
 
 func (e *DefaultEngine) RegisterAction(factory action.Factory) error {
@@ -37,13 +45,19 @@ func (e *DefaultEngine) RegisterHook(registerItem *hook.RegisterInfo) error {
 	return e.actionManager.RegisterHook(registerItem)
 }
 
-func (e *DefaultEngine) Load(ctx context.Context, homepage *po.Homepage) (*job.Flow, error) {
+func (e *DefaultEngine) Load(ctx context.Context, homepage *po.Homepage, useCache bool) (*job.Flow, error) {
+	if useCache {
+		if flow, ok := e.activeFlows.Get(homepage.Name); ok {
+			return flow, nil
+		}
+	}
 	flow, err := e.jobManager.Resolve(ctx, homepage.Actions, e.actionManager, e.config)
+	e.activeFlows.Add(homepage.Name, flow)
 	return flow, err
 }
 
 func (e *DefaultEngine) Crawl(ctx context.Context, hp *po.Homepage) error {
-	flow, err := e.Load(ctx, hp)
+	flow, err := e.Load(ctx, hp, false)
 	if err != nil {
 		return err
 	}
@@ -112,6 +126,6 @@ func (e *DefaultEngine) updateCurrentVersion(ctx context.Context, v *po.Version,
 	return
 }
 
-func (e *DefaultEngine) ActionHierarchy(ctx context.Context) (*action.HierarchyDTO, error) {
+func (e *DefaultEngine) ActionHierarchy(context.Context) (*action.HierarchyDTO, error) {
 	return e.actionManager.categories.DTO()
 }

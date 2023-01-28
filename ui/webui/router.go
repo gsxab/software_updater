@@ -24,7 +24,7 @@ func RegisterRouters(r *gin.Engine) {
 	// action
 	g.GET("/action", h.GetActionTree)
 	// flow
-	//g.GET("/flow", getFlow)
+	g.GET("/flow", h.GetFlow)
 	//g.GET("/flow/realtime", getRealTimeFlow)
 	//g.GET("/flow/job", getJob)
 	//g.PUT("/flow", putFlow)

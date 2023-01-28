@@ -10,11 +10,11 @@ import (
 )
 
 type Engine interface {
-	InitEngine(*config.EngineConfig)
+	InitEngine(*config.EngineConfig) error
 	RegisterAction(factory action.Factory) error
 	RegisterHook(registerItem *hook.RegisterInfo) error
 	Crawl(ctx context.Context, homepage *po.Homepage) error
-	Load(ctx context.Context, homepage *po.Homepage) (*job.Flow, error)
+	Load(ctx context.Context, homepage *po.Homepage, useCache bool) (*job.Flow, error)
 	CrawlAll(ctx context.Context) error
 	ActionHierarchy(ctx context.Context) (*action.HierarchyDTO, error)
 }
@@ -23,7 +23,10 @@ var engine Engine
 
 func InitEngine(config *config.EngineConfig, extraPlugins ...Plugin) (Engine, error) {
 	engine = &DefaultEngine{}
-	engine.InitEngine(config)
+	err := engine.InitEngine(config)
+	if err != nil {
+		return nil, err
+	}
 
 	plugins := DefaultPlugins(config)
 	plugins = append(plugins, extraPlugins...)
