@@ -51,7 +51,7 @@ func main() {
 			log.Panic(err)
 		}
 	case "off":
-		err = e.CrawlAll(context.Background())
+		err = e.RunAll(context.Background())
 		if err != nil {
 			log.Panic(err)
 		}

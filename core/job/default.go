@@ -66,12 +66,18 @@ func (j *DefaultJob) InitAction(ctx context.Context, errs error_util.Collector, 
 		errs.Collect(fmt.Errorf("action init error: %w", err))
 		return
 	}
-	j.state = Pending
+	j.state = Ready
 }
 
-func (j *DefaultJob) RunAction(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version,
-	errs error_util.Collector, wg *sync.WaitGroup) (output *action.Args, finish bool, err error) {
+func (j *DefaultJob) RunAction(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version, errs error_util.Collector, wg *sync.WaitGroup) (output *action.Args, finishBranch bool, stopFlow bool, err error) {
 	j.state = Processing
+
+	select {
+	case <-ctx.Done():
+		j.state = Cancelled
+		return nil, true, true, nil
+	default:
+	}
 	// ready
 
 	// hooks: before run
@@ -106,16 +112,21 @@ func (j *DefaultJob) RunAction(ctx context.Context, driver selenium.WebDriver, a
 	if err != nil {
 		j.state = Aborted
 		errs.Collect(fmt.Errorf("action run error: %w", err))
-		return output, true, err
+		return output, true, true, err
 	}
 	switch result {
 	case action.Cancelled:
 		j.state = Cancelled
+		finishBranch = true
 	case action.Again:
 		return j.RunAction(ctx, nil, args, v, errs, nil)
-	case action.StopFlow:
-		finish = true
+	case action.StopBranch:
 		j.state = Success
+		finishBranch = true
+	case action.StopFlow:
+		j.state = Success
+		finishBranch = true
+		stopFlow = true
 	case action.Finished:
 		j.state = Success
 	case action.Skipped:

@@ -13,13 +13,23 @@ import (
 type State int
 
 const (
+	// Init means a job or a task is being initialized.
 	Init State = iota + 1
+	// Pending means a task is pending for the runner.
 	Pending
+	// Ready means a job is successfully initialized, and never run by the runner.
+	Ready
+	// Processing means a job or a task is in process.
 	Processing
+	// Success means a job or a task has exited with success.
 	Success
+	// Failure means a job fails to be initialized, or a task has exited with failure.
 	Failure
+	// Cancelled means a job has been cancelled when running, or a task has been cancelled before exiting.
 	Cancelled
+	// Skipped means a job has marked itself skipped (usually a checker finds nothing to check).
 	Skipped
+	// Aborted means a job has at least one error reported in running.
 	Aborted
 )
 
@@ -31,7 +41,7 @@ type Job interface {
 	SetAction(action action.Action, hooks []*hook.ActionHooks)
 	Action() action.Action
 	InitAction(ctx context.Context, errs error_util.Collector, wg *sync.WaitGroup)
-	RunAction(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version, errs error_util.Collector, wg *sync.WaitGroup) (*action.Args, bool, error)
+	RunAction(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version, errs error_util.Collector, wg *sync.WaitGroup) (output *action.Args, finishBranch bool, stopFlow bool, err error)
 	State() State
 	SetState(State)
 	SetStateDesc(string)

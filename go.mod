@@ -6,7 +6,8 @@ require (
 	fyne.io/fyne/v2 v2.3.0
 	github.com/andelf/go-curl v0.0.0-20200630032108-fd49ff24ed97
 	github.com/gin-gonic/gin v1.8.2
-	github.com/hashicorp/golang-lru/v2 v2.0.1
+	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
+	github.com/gsxab/go-generic_lru v0.0.0-00010101000000-000000000000
 	github.com/tebeka/selenium v0.9.10-0.20211105214847-e9100b7f5ac1
 	golang.org/x/net v0.4.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -55,7 +56,7 @@ require (
 	github.com/srwiley/rasterx v0.0.0-20210519020934-456a8d69b780 // indirect
 	github.com/stretchr/testify v1.8.1 // indirect
 	github.com/tevino/abool v1.2.0 // indirect
-	github.com/ugorji/go/codec v1.2.8 // indirect
+	github.com/ugorji/go/codec v1.2.7 // indirect
 	github.com/yuin/goldmark v1.4.13 // indirect
 	golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b // indirect
 	golang.org/x/image v0.0.0-20220601225756-64ec528b34cd // indirect

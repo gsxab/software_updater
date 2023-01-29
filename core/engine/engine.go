@@ -13,9 +13,10 @@ type Engine interface {
 	InitEngine(*config.EngineConfig) error
 	RegisterAction(factory action.Factory) error
 	RegisterHook(registerItem *hook.RegisterInfo) error
-	Crawl(ctx context.Context, homepage *po.Homepage) error
+	Run(ctx context.Context, homepage *po.Homepage) (TaskID, error)
+	CheckState(ctx context.Context, id TaskID) (bool, job.State, error)
 	Load(ctx context.Context, homepage *po.Homepage, useCache bool) (*job.Flow, error)
-	CrawlAll(ctx context.Context) error
+	RunAll(ctx context.Context) error
 	ActionHierarchy(ctx context.Context) (*action.HierarchyDTO, error)
 }
 

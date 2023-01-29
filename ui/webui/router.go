@@ -30,6 +30,6 @@ func RegisterRouters(r *gin.Engine) {
 	//g.PUT("/flow", putFlow)
 	//g.DELETE("/flow/job", deleteFlow)
 	// flow state
-	//g.POST("/flow/start", startFlow)
-	//g.POST("/flow/cancel", cancelFlow)
+	g.POST("/flow/start", h.StartFlow)
+	//g.POST("/flow/cancel", h.CancelFlow)
 }

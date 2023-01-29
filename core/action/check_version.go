@@ -40,6 +40,7 @@ func (a *CheckVersion) Do(ctx context.Context, _ selenium.WebDriver, _ *Args, ve
 			"current", currentVersion, "previous", previousVersion)
 		exit = StopFlow
 	}
+	logs.InfoM(ctx, "version update", "previousVersion", previousVersion, "currentVersion", currentVersion)
 	return
 }
 

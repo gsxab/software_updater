@@ -3,7 +3,7 @@ package engine
 import (
 	"context"
 	"fmt"
-	cache "github.com/hashicorp/golang-lru/v2"
+	cache "github.com/golang/groupcache/lru"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
 	"software_updater/core/config"
@@ -11,26 +11,31 @@ import (
 	"software_updater/core/db/po"
 	"software_updater/core/hook"
 	"software_updater/core/job"
+	"software_updater/core/logs"
 	"software_updater/core/tools/web"
+	"software_updater/core/util"
 	"software_updater/core/util/error_util"
 	"time"
 )
 
 type DefaultEngine struct {
-	actionManager *ActionManager
-	jobManager    *JobManager
-	activeFlows   *cache.Cache[string, *job.Flow]
-	config        *config.EngineConfig
-	driver        selenium.WebDriver
+	actionManager   *ActionManager
+	flowInitializer *FlowInitializer
+	taskRunner      *TaskRunner
+	scheduler       Scheduler
+	activeFlows     *cache.Cache // string:*job.Flow
+	config          *config.EngineConfig
+	driver          selenium.WebDriver
 }
 
 func (e *DefaultEngine) InitEngine(engineConfig *config.EngineConfig) error {
-	var err error
-	e.activeFlows, err = cache.New[string, *job.Flow](16)
-	if err != nil {
-		return nil
-	}
+	e.activeFlows = cache.New(16)
 	e.actionManager = NewActionManager()
+	e.flowInitializer = NewFlowInitializer()
+	e.taskRunner = NewTaskRunner(true, engineConfig.RunnerCheck, func(ctx context.Context, cv *po.CurrentVersion, v *po.Version) {
+		_ = e.updateCurrentVersion(ctx, v, cv)
+	})
+	e.scheduler = NewScheduler()
 	e.config = engineConfig
 	e.driver = web.Driver()
 	return nil
@@ -48,31 +53,30 @@ func (e *DefaultEngine) RegisterHook(registerItem *hook.RegisterInfo) error {
 func (e *DefaultEngine) Load(ctx context.Context, homepage *po.Homepage, useCache bool) (*job.Flow, error) {
 	if useCache {
 		if flow, ok := e.activeFlows.Get(homepage.Name); ok {
-			return flow, nil
+			return flow.(*job.Flow), nil
 		}
 	}
-	flow, err := e.jobManager.Resolve(ctx, homepage.Actions, e.actionManager, e.config)
+	flow, err := e.flowInitializer.Resolve(ctx, homepage.Actions, e.actionManager, e.config)
 	e.activeFlows.Add(homepage.Name, flow)
 	return flow, err
 }
 
-func (e *DefaultEngine) Crawl(ctx context.Context, hp *po.Homepage) error {
-	flow, err := e.Load(ctx, hp, false)
+func (e *DefaultEngine) Run(ctx context.Context, hp *po.Homepage) (TaskID, error) {
+	flow, err := e.Load(ctx, hp, true)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	version, err := e.jobManager.RunJobs(ctx, flow, e.driver, hp.Current)
+	id, err := e.taskRunner.EnqueueJob(flow, hp.Current)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	err = e.updateCurrentVersion(ctx, version, hp.Current)
-	if err != nil {
-		return err
-	}
+	return id, nil
+}
 
-	return nil
+func (e *DefaultEngine) CheckState(_ context.Context, id TaskID) (bool, job.State, error) {
+	return e.taskRunner.GetTaskState(id)
 }
 
 func (e *DefaultEngine) NeedCrawl(ctx context.Context) (hps []*po.Homepage, err error) {
@@ -88,7 +92,7 @@ func (e *DefaultEngine) NeedCrawl(ctx context.Context) (hps []*po.Homepage, err 
 	return
 }
 
-func (e *DefaultEngine) CrawlAll(ctx context.Context) error {
+func (e *DefaultEngine) RunAll(ctx context.Context) error {
 	hps, err := e.NeedCrawl(ctx)
 	if err != nil {
 		return err
@@ -96,7 +100,8 @@ func (e *DefaultEngine) CrawlAll(ctx context.Context) error {
 
 	errs := error_util.NewCollector()
 	for _, hp := range hps {
-		errs.Collect(e.Crawl(ctx, hp))
+		_, err := e.Run(ctx, hp)
+		errs.Collect(err)
 	}
 	err = errs.ToError()
 	if err != nil {
@@ -109,19 +114,31 @@ func (e *DefaultEngine) CrawlAll(ctx context.Context) error {
 func (e *DefaultEngine) updateCurrentVersion(ctx context.Context, v *po.Version, cv *po.CurrentVersion) (err error) {
 	vDAO := dao.Version
 	cvDAO := dao.CurrentVersion
+
+	if v.LocalTime == nil {
+		t := time.Now()
+		v.LocalTime = &t
+	}
+
 	err = vDAO.WithContext(ctx).Create(v)
 	if err != nil {
+		logs.Error(ctx, "insert new version failed", err, "v", util.ToJSON(v))
 		return err
 	}
-	info, err := cvDAO.WithContext(ctx).Where(vDAO.ID.Eq(cv.ID)).UpdateSimple(cvDAO.VersionID.Value(v.ID))
+	schedule := e.scheduler.ScheduleForUpdate(cv, cv.Version, v)
+	info, err := cvDAO.WithContext(ctx).Where(vDAO.ID.Eq(cv.ID)).UpdateSimple(cvDAO.VersionID.Value(v.ID), cvDAO.ScheduledAt.Value(schedule))
 	if err != nil {
+		logs.Error(ctx, "update current version failed", err, "cv", util.ToJSON(cv), "v.ID", v.ID)
 		return err
 	}
 	if info.Error != nil {
+		logs.Error(ctx, "update current version failed", info.Error, "cv", util.ToJSON(cv), "v.ID", v.ID)
 		return info.Error
 	}
 	if info.RowsAffected != 1 {
-		return fmt.Errorf("rows affected unexpected, expected: 1, real: %d", info.RowsAffected)
+		err = fmt.Errorf("rows affected unexpected, expected: 1, real: %d", info.RowsAffected)
+		logs.Error(ctx, "update current version failed", err, "cv", util.ToJSON(cv), "v.ID", v.ID)
+		return err
 	}
 	return
 }

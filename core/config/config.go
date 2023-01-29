@@ -35,6 +35,8 @@ type EngineConfig struct {
 	ForceUpdate bool `yaml:"force_update,omitempty"`
 	DebugLog    bool `yaml:"debug_log,omitempty"`
 	DebugCheck  bool `yaml:"debug_check,omitempty"`
+	DoneCache   int  `yaml:"done_cache,omitempty"`
+	RunnerCheck int  `yaml:"runner_loop_interval,omitempty"`
 }
 
 var config = DefaultConfig()
@@ -58,6 +60,8 @@ func DefaultConfig() *Config {
 			ForceUpdate: false,
 			DebugLog:    false,
 			DebugCheck:  false,
+			DoneCache:   16,
+			RunnerCheck: 10,
 		},
 		Extra: make(map[string]string),
 	}
