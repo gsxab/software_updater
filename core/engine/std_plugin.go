@@ -3,7 +3,8 @@ package engine
 import (
 	"context"
 	"software_updater/core/action"
-	"software_updater/core/action/std_action"
+	"software_updater/core/action/prototype"
+	"software_updater/core/action/std"
 	"software_updater/core/config"
 	"software_updater/core/hook"
 	"software_updater/core/util/error_util"
@@ -19,59 +20,59 @@ func DefaultPlugins(config *config.EngineConfig) []Plugin {
 		// basic function
 		&ActionPlugin{
 			Factories: []action.Factory{
-				&std_action.ReturnEmpty{},
-				&std_action.ReturnConst{},
-				&std_action.AppendConst{},
-				&std_action.WaitFor{},
+				&std.ReturnEmpty{},
+				&std.ReturnConst{},
+				&std.AppendConst{},
+				&std.WaitFor{},
 				//&action.WaitUntilNext{},
 				// browser control
-				&std_action.AccessConst{},
-				&std_action.Access{},
+				&std.AccessConst{},
+				&std.Access{},
 				//&action.MouseMove{},
-				&std_action.Click{},
+				&std.Click{},
 				// node selector
-				&std_action.CSSSelect{},
-				&std_action.CSSSelectMultiple{},
-				&std_action.CSSSelectAppend{},
+				&std.CSSSelect{},
+				&std.CSSSelectMultiple{},
+				&std.CSSSelectAppend{},
 				//&action.XPathSelect{},
 				//&action.XPathSelectMultiple{},
 				//&action.XPathSelectAppend{},
-				&std_action.RegexpFilter{},
+				&std.RegexpFilter{},
 				//&action.ContainsFilter{},
 				// node reader
-				&std_action.ReadText{},
-				&std_action.ReadAttr{},
+				&std.ReadText{},
+				&std.ReadAttr{},
 				// value checker
 				//&action.CheckVersion{},
 				//&action.CheckDate{},
 				// string mutator
-				&std_action.RegexpExtract{},
-				&action.Format{},
-				&std_action.ReduceFormat{},
-				&std_action.AppendFormat{},
-				&std_action.URLUnescape{},
-				&std_action.URLEscape{},
+				&std.RegexpExtract{},
+				&prototype.Format{},
+				&std.ReduceFormat{},
+				&std.AppendFormat{},
+				&std.URLUnescape{},
+				&std.URLEscape{},
 				// encoding
 				//&action.Encoding{},
 				// base encoder (RFC3548/4648)
-				&std_action.Base64URLDecode{},
-				&std_action.Base64URLEncode{},
+				&std.Base64URLDecode{},
+				&std.Base64URLEncode{},
 				//&action.Base64Decode{},
 				//&action.Base64Encode{},
 				//&action.Base32Decode{},
 				//&action.Base32Encode{},
 				//&action.Base32HexDecode{},
 				//&action.Base32HexEncode{},
-				&std_action.HexDecode{},
-				&std_action.HexEncode{},
+				&std.HexDecode{},
+				&std.HexEncode{},
 				// curl a url
-				&std_action.CURL{},
-				&std_action.CURLSave{},
+				&std.CURL{},
+				&std.CURLSave{},
 				// store infos
-				&std_action.StoreURL{},
-				&std_action.StoreVersion{},
-				&std_action.StoreDate{},
-				&std_action.StoreDigest{},
+				&std.StoreURL{},
+				&std.StoreVersion{},
+				&std.StoreDate{},
+				&std.StoreDigest{},
 				//&action.StoreStr{},
 			},
 		},
