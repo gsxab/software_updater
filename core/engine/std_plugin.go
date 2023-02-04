@@ -3,6 +3,7 @@ package engine
 import (
 	"context"
 	"software_updater/core/action"
+	"software_updater/core/action/std_action"
 	"software_updater/core/config"
 	"software_updater/core/hook"
 	"software_updater/core/util/error_util"
@@ -18,59 +19,59 @@ func DefaultPlugins(config *config.EngineConfig) []Plugin {
 		// basic function
 		&ActionPlugin{
 			Factories: []action.Factory{
-				&action.ReturnEmpty{},
-				&action.ReturnConst{},
-				&action.AppendConst{},
-				&action.WaitFor{},
+				&std_action.ReturnEmpty{},
+				&std_action.ReturnConst{},
+				&std_action.AppendConst{},
+				&std_action.WaitFor{},
 				//&action.WaitUntilNext{},
 				// browser control
-				&action.AccessConst{},
-				&action.Access{},
+				&std_action.AccessConst{},
+				&std_action.Access{},
 				//&action.MouseMove{},
-				&action.Click{},
+				&std_action.Click{},
 				// node selector
-				&action.CSSSelect{},
-				&action.CSSSelectMultiple{},
-				&action.CSSSelectAppend{},
+				&std_action.CSSSelect{},
+				&std_action.CSSSelectMultiple{},
+				&std_action.CSSSelectAppend{},
 				//&action.XPathSelect{},
 				//&action.XPathSelectMultiple{},
 				//&action.XPathSelectAppend{},
-				&action.RegexpFilter{},
+				&std_action.RegexpFilter{},
 				//&action.ContainsFilter{},
 				// node reader
-				&action.ReadText{},
-				&action.ReadAttr{},
+				&std_action.ReadText{},
+				&std_action.ReadAttr{},
 				// value checker
 				//&action.CheckVersion{},
 				//&action.CheckDate{},
 				// string mutator
-				&action.RegexpExtract{},
+				&std_action.RegexpExtract{},
 				&action.Format{},
-				&action.ReduceFormat{},
-				&action.AppendFormat{},
-				&action.URLUnescape{},
-				&action.URLEscape{},
+				&std_action.ReduceFormat{},
+				&std_action.AppendFormat{},
+				&std_action.URLUnescape{},
+				&std_action.URLEscape{},
 				// encoding
 				//&action.Encoding{},
 				// base encoder (RFC3548/4648)
-				&action.Base64URLDecode{},
-				&action.Base64URLEncode{},
+				&std_action.Base64URLDecode{},
+				&std_action.Base64URLEncode{},
 				//&action.Base64Decode{},
 				//&action.Base64Encode{},
 				//&action.Base32Decode{},
 				//&action.Base32Encode{},
 				//&action.Base32HexDecode{},
 				//&action.Base32HexEncode{},
-				&action.HexDecode{},
-				&action.HexEncode{},
+				&std_action.HexDecode{},
+				&std_action.HexEncode{},
 				// curl a url
-				&action.CURL{},
-				&action.CURLSave{},
+				&std_action.CURL{},
+				&std_action.CURLSave{},
 				// store infos
-				&action.StoreURL{},
-				&action.StoreVersion{},
-				&action.StoreDate{},
-				&action.StoreDigest{},
+				&std_action.StoreURL{},
+				&std_action.StoreVersion{},
+				&std_action.StoreDate{},
+				&std_action.StoreDigest{},
 				//&action.StoreStr{},
 			},
 		},

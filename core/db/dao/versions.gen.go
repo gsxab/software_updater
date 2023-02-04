@@ -39,7 +39,7 @@ func newVersion(db *gorm.DB, opts ...gen.DOOption) version {
 	_version.Digest = field.NewString(tableName, "digest")
 	_version.RemoteDate = field.NewTime(tableName, "remote_date")
 	_version.LocalTime = field.NewTime(tableName, "local_time")
-	_version.Previous = field.NewString(tableName, "previous_version")
+	_version.Previous = field.NewUint(tableName, "previous_version_id")
 	_version.CV = versionHasOneCV{
 		db: db.Session(&gorm.Session{}),
 
@@ -80,7 +80,7 @@ type version struct {
 	Digest     field.String
 	RemoteDate field.Time
 	LocalTime  field.Time
-	Previous   field.String
+	Previous   field.Uint
 	CV         versionHasOneCV
 
 	fieldMap map[string]field.Expr
@@ -110,7 +110,7 @@ func (v *version) updateTableName(table string) *version {
 	v.Digest = field.NewString(table, "digest")
 	v.RemoteDate = field.NewTime(table, "remote_date")
 	v.LocalTime = field.NewTime(table, "local_time")
-	v.Previous = field.NewString(table, "previous_version")
+	v.Previous = field.NewUint(table, "previous_version_id")
 
 	v.fillFieldMap()
 
@@ -146,7 +146,7 @@ func (v *version) fillFieldMap() {
 	v.fieldMap["digest"] = v.Digest
 	v.fieldMap["remote_date"] = v.RemoteDate
 	v.fieldMap["local_time"] = v.LocalTime
-	v.fieldMap["previous_version"] = v.Previous
+	v.fieldMap["previous_version_id"] = v.Previous
 
 }
 

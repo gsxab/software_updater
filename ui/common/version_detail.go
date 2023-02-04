@@ -35,7 +35,7 @@ func GetVersionDetail(ctx context.Context, name string, optionalPage *string, v 
 		Name:        name,
 		HomepageURL: page,
 		Version:     v,
-		PrevVersion: version.Previous,
+		PrevVersion: nil,
 		NextVersion: nil,
 		RemoteDate:  util.FormatTime(version.RemoteDate, dateFormat),
 		UpdateDate:  *util.FormatTime(version.LocalTime, dateFormat),
@@ -44,20 +44,26 @@ func GetVersionDetail(ctx context.Context, name string, optionalPage *string, v 
 		Picture:     version.Picture,
 	}
 
-	nextVersionExist, err := vDAO.WithContext(ctx).Where(vDAO.Name.Eq(name), vDAO.Previous.Eq(v)).Count()
+	if version.Previous != nil {
+		previousVersion, err := vDAO.WithContext(ctx).Where(vDAO.ID.Eq(*version.Previous)).Take()
+		if err != nil {
+			logs.Error(ctx, "version query failed", err, "id", *version.Previous)
+			return nil, err
+		}
+
+		data.PrevVersion = &previousVersion.Version
+	}
+
+	nextVersionSlice, err := vDAO.WithContext(ctx).Where(vDAO.Previous.Eq(version.ID)).Find()
 	if err != nil {
 		logs.Error(ctx, "version query failed", err, "name", name, "v", v)
 		return nil, err
 	}
 
-	if nextVersionExist > 0 {
-		nextVersion, err := vDAO.WithContext(ctx).Where(vDAO.Name.Eq(name), vDAO.Previous.Eq(v)).Take()
-		if err != nil {
-			logs.Error(ctx, "version query failed", err, "name", name, "v", v)
-			return nil, err
-		}
-
-		data.NextVersion = &nextVersion.Version
+	if len(nextVersionSlice) == 1 {
+		data.NextVersion = &nextVersionSlice[0].Version
+	} else if len(nextVersionSlice) > 1 {
+		logs.ErrorM(ctx, "next version more than one", "id", version.ID)
 	}
 
 	return data, nil

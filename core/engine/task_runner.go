@@ -122,7 +122,7 @@ func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.We
 	if cv.Version != nil {
 		v.Name = cv.Version.Name
 		v.Version = cv.Version.Version
-		v.Previous = &cv.Version.Version
+		v.Previous = &cv.Version.ID
 	}
 
 	ctx, task.Cancel = context.WithCancel(ctx)
