@@ -4,18 +4,22 @@ import (
 	"context"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
-	"software_updater/core/action/prototype"
+	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"software_updater/core/logs"
 	"sync"
 )
 
 type ReadText struct {
-	prototype.Default
+	base.Default
 }
 
 func (a *ReadText) Path() action.Path {
 	return action.Path{"browser", "reader", "read_text"}
+}
+
+func (a *ReadText) Icon() string {
+	return "magnify"
 }
 
 func (a *ReadText) InElmNum() int {
@@ -42,11 +46,17 @@ func (a *ReadText) Do(ctx context.Context, _ selenium.WebDriver, input *action.A
 
 func (a *ReadText) ToDTO() *action.DTO {
 	return &action.DTO{
-		Input:  []string{"node"},
-		Output: []string{"text"},
+		ProtoDTO: a.ToProtoDTO(),
 	}
 }
 
 func (a *ReadText) NewAction(string) (action.Action, error) {
 	return a, nil
+}
+
+func (a *ReadText) ToProtoDTO() *action.ProtoDTO {
+	return &action.ProtoDTO{
+		Input:  []string{"node"},
+		Output: []string{"text"},
+	}
 }

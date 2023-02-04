@@ -1,4 +1,4 @@
-package prototype
+package base
 
 import (
 	"context"
@@ -10,6 +10,10 @@ import (
 type VersionFilter struct {
 	VersionFormat string `json:"format"`
 	IndexReader
+}
+
+func (a *VersionFilter) Icon() string {
+	return "alpha-v-box-outline"
 }
 
 func (a *VersionFilter) Filter(ctx context.Context, input *action.Args,

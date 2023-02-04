@@ -4,20 +4,24 @@ import (
 	"context"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
-	"software_updater/core/action/prototype"
+	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"software_updater/core/util"
 	"sync"
 )
 
 type AppendConst struct {
-	prototype.Default
-	prototype.DefaultFactory[AppendConst, *AppendConst]
+	base.Default
+	base.DefaultFactory[AppendConst, *AppendConst]
 	Val string `json:"val"`
 }
 
 func (a *AppendConst) Path() action.Path {
 	return action.Path{"basic", "value_generator", "append_value"}
+}
+
+func (a *AppendConst) Icon() string {
+	return "text-box-plus-outline"
 }
 
 func (a *AppendConst) OutStrNum() int {
@@ -30,5 +34,7 @@ func (a *AppendConst) Do(ctx context.Context, driver selenium.WebDriver, input *
 }
 
 func (a *AppendConst) ToDTO() *action.DTO {
-	return &action.DTO{Values: map[string]string{"value": util.ToJSON(a.Val)}}
+	return &action.DTO{
+		Values: map[string]string{"value": util.ToJSON(a.Val)},
+	}
 }

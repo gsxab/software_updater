@@ -4,20 +4,24 @@ import (
 	"context"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
-	"software_updater/core/action/prototype"
+	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"software_updater/core/logs"
 	"sync"
 )
 
 type CSSSelectMultiple struct {
-	prototype.Default
-	prototype.DefaultFactory[CSSSelectMultiple, *CSSSelectMultiple]
+	base.Default
+	base.DefaultFactory[CSSSelectMultiple, *CSSSelectMultiple]
 	Selector string `json:"selector"`
 }
 
 func (a *CSSSelectMultiple) Path() action.Path {
 	return action.Path{"selector", "css", "css_select_multiple"}
+}
+
+func (a *CSSSelectMultiple) Icon() string {
+	return "select_multiple"
 }
 
 func (a *CSSSelectMultiple) OutElmNum() int {
@@ -36,8 +40,10 @@ func (a *CSSSelectMultiple) Do(ctx context.Context, driver selenium.WebDriver, i
 
 func (a *CSSSelectMultiple) ToDTO() *action.DTO {
 	return &action.DTO{
-		ReadPage: true,
-		Output:   []string{"nodes..."},
-		Values:   map[string]string{"selector": a.Selector},
+		ProtoDTO: &action.ProtoDTO{
+			ReadPage: true,
+			Output:   []string{"nodes..."},
+		},
+		Values: map[string]string{"selector": a.Selector},
 	}
 }

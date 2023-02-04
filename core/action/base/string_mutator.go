@@ -1,4 +1,4 @@
-package prototype
+package base
 
 import (
 	"context"
@@ -11,6 +11,10 @@ import (
 type StringMutator struct {
 	Default
 	Skip []int `json:"skip,omitempty"`
+}
+
+func (a *StringMutator) Icon() string {
+	return "text-box-edit-outline"
 }
 
 func (a *StringMutator) Mutate(input *action.Args, mutate func(text string) string) (output *action.Args, exit action.Result, err error) {
@@ -45,8 +49,10 @@ func (a *StringMutator) MutateWithErr(ctx context.Context, input *action.Args, m
 
 func (a *StringMutator) ToDTO() *action.DTO {
 	return &action.DTO{
-		Input:  []string{"text..."},
-		Output: []string{"formatted_text..."},
+		ProtoDTO: &action.ProtoDTO{
+			Input:  []string{"text..."},
+			Output: []string{"formatted_text..."},
+		},
 		Values: map[string]string{"skip": util.ToJSON(a.Skip)},
 	}
 }

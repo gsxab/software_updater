@@ -4,20 +4,24 @@ import (
 	"context"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
-	"software_updater/core/action/prototype"
+	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"software_updater/core/util"
 	"sync"
 )
 
 type ReturnConst struct {
-	prototype.Default
-	prototype.DefaultFactory[ReturnConst, *ReturnConst]
+	base.Default
+	base.DefaultFactory[ReturnConst, *ReturnConst]
 	Val []string `json:"val"`
 }
 
 func (r *ReturnConst) Path() action.Path {
 	return action.Path{"basic", "value_generator", "return_value"}
+}
+
+func (a *ReturnConst) Icon() string {
+	return "text-box-outline"
 }
 
 func (a *ReturnConst) OutStrNum() int {

@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
-	"software_updater/core/action/prototype"
+	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"software_updater/core/logs"
 	"software_updater/core/util/url_util"
@@ -12,12 +12,16 @@ import (
 )
 
 type Access struct {
-	prototype.Default
-	prototype.DefaultFactory[Access, *Access]
+	base.Default
+	base.DefaultFactory[Access, *Access]
 }
 
 func (a *Access) Path() action.Path {
 	return action.Path{"browser", "access", "goto_url"}
+}
+
+func (a *Access) Icon() string {
+	return "web"
 }
 
 func (a *Access) OutElmNum() int {
@@ -43,7 +47,9 @@ func (a *Access) Do(ctx context.Context, driver selenium.WebDriver, input *actio
 
 func (a *Access) ToDTO() *action.DTO {
 	return &action.DTO{
-		OpenPage: true,
-		Input:    []string{"rel_url"},
+		ProtoDTO: &action.ProtoDTO{
+			OpenPage: true,
+			Input:    []string{"rel_url"},
+		},
 	}
 }

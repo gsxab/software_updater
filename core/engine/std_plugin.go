@@ -3,7 +3,7 @@ package engine
 import (
 	"context"
 	"software_updater/core/action"
-	"software_updater/core/action/prototype"
+	"software_updater/core/action/base"
 	"software_updater/core/action/std"
 	"software_updater/core/config"
 	"software_updater/core/hook"
@@ -47,7 +47,7 @@ func DefaultPlugins(config *config.EngineConfig) []Plugin {
 				//&action.CheckDate{},
 				// string mutator
 				&std.RegexpExtract{},
-				&prototype.Format{},
+				&base.Format{},
 				&std.ReduceFormat{},
 				&std.AppendFormat{},
 				&std.URLUnescape{},
@@ -65,6 +65,9 @@ func DefaultPlugins(config *config.EngineConfig) []Plugin {
 				//&action.Base32HexEncode{},
 				&std.HexDecode{},
 				&std.HexEncode{},
+				// compare versions
+				&std.CheckVersion{},
+				&std.CheckLaterVersion{},
 				// curl a url
 				&std.CURL{},
 				&std.CURLSave{},

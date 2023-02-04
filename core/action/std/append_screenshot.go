@@ -8,7 +8,7 @@ import (
 	"os"
 	"path"
 	"software_updater/core/action"
-	"software_updater/core/action/prototype"
+	"software_updater/core/action/base"
 	"software_updater/core/config"
 	"software_updater/core/db/po"
 	"software_updater/core/logs"
@@ -17,12 +17,16 @@ import (
 )
 
 type AppendScreenshot struct {
-	prototype.Default
-	prototype.DefaultFactory[AppendScreenshot, *AppendScreenshot]
+	base.Default
+	base.DefaultFactory[AppendScreenshot, *AppendScreenshot]
 }
 
 func (a *AppendScreenshot) Path() action.Path {
 	return action.Path{"browser", "reader", "append_screenshot"}
+}
+
+func (a *AppendScreenshot) Icon() string {
+	return "image-plus-outline"
 }
 
 func (a *AppendScreenshot) OutStrNum() int {
@@ -54,6 +58,8 @@ func (a *AppendScreenshot) Do(ctx context.Context, driver selenium.WebDriver, in
 
 func (a *AppendScreenshot) ToDTO() *action.DTO {
 	return &action.DTO{
-		Output: []string{"filename"},
+		ProtoDTO: &action.ProtoDTO{
+			Output: []string{"filename"},
+		},
 	}
 }

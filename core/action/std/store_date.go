@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
-	"software_updater/core/action/prototype"
+	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"software_updater/core/logs"
 	"software_updater/core/util"
@@ -13,14 +13,18 @@ import (
 )
 
 type StoreDate struct {
-	prototype.Default
-	prototype.DefaultFactory[StoreDate, *StoreDate]
-	prototype.IndexReader
+	base.Default
+	base.DefaultFactory[StoreDate, *StoreDate]
+	base.IndexReader
 	Format string `json:"format"`
 }
 
 func (a *StoreDate) Path() action.Path {
 	return action.Path{"basic", "value_store", "store_date"}
+}
+
+func (a *StoreDate) Icon() string {
+	return "clock-edit-outline"
 }
 
 func (a *StoreDate) Do(ctx context.Context, _ selenium.WebDriver, input *action.Args, version *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {
@@ -37,8 +41,10 @@ func (a *StoreDate) Do(ctx context.Context, _ selenium.WebDriver, input *action.
 
 func (a *StoreDate) ToDTO() *action.DTO {
 	return &action.DTO{
-		Input:  []string{"text"},
-		Output: []string{"text"},
+		ProtoDTO: &action.ProtoDTO{
+			Input:  []string{"text"},
+			Output: []string{"text"},
+		},
 		Values: map[string]string{"index": util.ToJSON(a.Index), "format": a.Format},
 	}
 }

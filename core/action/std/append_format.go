@@ -5,19 +5,23 @@ import (
 	"fmt"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
-	"software_updater/core/action/prototype"
+	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"sync"
 )
 
 type AppendFormat struct {
-	prototype.Default
-	prototype.DefaultFactory[AppendFormat, *AppendFormat]
+	base.Default
+	base.DefaultFactory[AppendFormat, *AppendFormat]
 	Format string `json:"format"`
 }
 
 func (a *AppendFormat) Path() action.Path {
 	return action.Path{"string", "mutator", "append_format"}
+}
+
+func (a *AppendFormat) Icon() string {
+	return "text-box-plus-outline"
 }
 
 func (a *AppendFormat) OutStrNum() int {
@@ -36,8 +40,10 @@ func (a *AppendFormat) Do(ctx context.Context, driver selenium.WebDriver, input 
 
 func (a *AppendFormat) ToDTO() *action.DTO {
 	return &action.DTO{
-		Input:  []string{"text"},
-		Output: []string{"formatted_text"},
+		ProtoDTO: &action.ProtoDTO{
+			Input:  []string{"text"},
+			Output: []string{"formatted_text"},
+		},
 		Values: map[string]string{"pattern": a.Format},
 	}
 }

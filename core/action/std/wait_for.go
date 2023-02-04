@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
-	"software_updater/core/action/prototype"
+	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"software_updater/core/logs"
 	"sync"
@@ -12,14 +12,18 @@ import (
 )
 
 type WaitFor struct {
-	prototype.Default
-	prototype.DefaultFactory[WaitFor, *WaitFor]
+	base.Default
+	base.DefaultFactory[WaitFor, *WaitFor]
 	Delay string `json:"delay"`
 	delay time.Duration
 }
 
 func (a *WaitFor) Path() action.Path {
 	return action.Path{"basic", "wait", "delay"}
+}
+
+func (a *WaitFor) Icon() string {
+	return "timer-outline"
 }
 
 func (a *WaitFor) Init(ctx context.Context, _ *sync.WaitGroup) (err error) {

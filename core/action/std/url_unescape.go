@@ -5,14 +5,14 @@ import (
 	"github.com/tebeka/selenium"
 	"net/url"
 	"software_updater/core/action"
-	"software_updater/core/action/prototype"
+	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"sync"
 )
 
 type URLUnescape struct {
-	prototype.StringMutator
-	prototype.DefaultFactory[URLUnescape, *URLUnescape]
+	base.StringMutator
+	base.DefaultFactory[URLUnescape, *URLUnescape]
 }
 
 func (a *URLUnescape) Path() action.Path {

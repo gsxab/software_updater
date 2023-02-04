@@ -4,20 +4,24 @@ import (
 	"context"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
-	"software_updater/core/action/prototype"
+	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"software_updater/core/logs"
 	"sync"
 )
 
 type ReadAttr struct {
-	prototype.Default
-	prototype.DefaultFactory[ReadAttr, *ReadAttr]
+	base.Default
+	base.DefaultFactory[ReadAttr, *ReadAttr]
 	Attribute string `json:"attribute"`
 }
 
-func (r *ReadAttr) Path() action.Path {
+func (a *ReadAttr) Path() action.Path {
 	return action.Path{"browser", "reader", "read_attr"}
+}
+
+func (a *ReadAttr) Icon() string {
+	return "magnify"
 }
 
 func (a *ReadAttr) InElmNum() int {
@@ -48,8 +52,10 @@ func (a *ReadAttr) Do(ctx context.Context, _ selenium.WebDriver, input *action.A
 
 func (a *ReadAttr) ToDTO() *action.DTO {
 	return &action.DTO{
-		Input:  []string{"node"},
-		Output: []string{"attribute_text"},
+		ProtoDTO: &action.ProtoDTO{
+			Input:  []string{"node"},
+			Output: []string{"attribute_text"},
+		},
 		Values: map[string]string{"attribute": a.Attribute},
 	}
 }

@@ -4,17 +4,21 @@ import (
 	"context"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
-	"software_updater/core/action/prototype"
+	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"sync"
 )
 
 type ReturnEmpty struct {
-	prototype.Default
+	base.Default
 }
 
 func (a *ReturnEmpty) Path() action.Path {
 	return action.Path{"basic", "value_gen", "return_empty"}
+}
+
+func (a *ReturnEmpty) Icon() string {
+	return "null"
 }
 
 func (a *ReturnEmpty) Do(context.Context, selenium.WebDriver, *action.Args, *po.Version, *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {
@@ -27,4 +31,8 @@ func (a *ReturnEmpty) ToDTO() *action.DTO {
 
 func (a *ReturnEmpty) NewAction(_ string) (action.Action, error) {
 	return a, nil
+}
+
+func (a *ReturnEmpty) ToProtoDTO() *action.ProtoDTO {
+	return nil
 }

@@ -4,20 +4,24 @@ import (
 	"context"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
-	"software_updater/core/action/prototype"
+	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"software_updater/core/logs"
 	"sync"
 )
 
 type AccessConst struct {
-	prototype.Default
-	prototype.DefaultFactory[AccessConst, *AccessConst]
+	base.Default
+	base.DefaultFactory[AccessConst, *AccessConst]
 	URL string `json:"url"`
 }
 
 func (a *AccessConst) Path() action.Path {
 	return action.Path{"browser", "access", "goto_url"}
+}
+
+func (a *AccessConst) Icon() string {
+	return "web"
 }
 
 func (a *AccessConst) OutElmNum() int {
@@ -35,7 +39,9 @@ func (a *AccessConst) Do(ctx context.Context, driver selenium.WebDriver, _ *acti
 
 func (a *AccessConst) ToDTO() *action.DTO {
 	return &action.DTO{
-		OpenPage: true,
-		Values:   map[string]string{"url": a.URL},
+		ProtoDTO: &action.ProtoDTO{
+			OpenPage: true,
+		},
+		Values: map[string]string{"url": a.URL},
 	}
 }

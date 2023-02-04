@@ -6,7 +6,7 @@ import (
 	"os"
 	"path"
 	"software_updater/core/action"
-	"software_updater/core/action/prototype"
+	"software_updater/core/action/base"
 	"software_updater/core/config"
 	"software_updater/core/db/po"
 	"software_updater/core/logs"
@@ -16,11 +16,15 @@ import (
 )
 
 type CURLSave struct {
-	prototype.Default
+	base.Default
 }
 
 func (a *CURLSave) Path() action.Path {
 	return action.Path{"curl", "access", "curl_save"}
+}
+
+func (a *CURLSave) Icon() string {
+	return "file-link"
 }
 
 func (a *CURLSave) InStrNum() int {
@@ -71,11 +75,17 @@ func (a *CURLSave) Do(ctx context.Context, driver selenium.WebDriver, input *act
 
 func (a *CURLSave) ToDTO() *action.DTO {
 	return &action.DTO{
-		OpenPage: true,
-		Input:    []string{"rel_url", "file_path"},
+		ProtoDTO: a.ToProtoDTO(),
 	}
 }
 
 func (a *CURLSave) NewAction(string) (action.Action, error) {
 	return a, nil
+}
+
+func (a *CURLSave) ToProtoDTO() *action.ProtoDTO {
+	return &action.ProtoDTO{
+		OpenPage: true,
+		Input:    []string{"rel_url", "file_path"},
+	}
 }

@@ -4,20 +4,24 @@ import (
 	"context"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
-	"software_updater/core/action/prototype"
+	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"software_updater/core/util/version_util"
 	"sync"
 )
 
 type CheckVersion struct {
-	prototype.Default
-	prototype.DefaultFactory[CheckVersion, *CheckVersion]
-	prototype.VersionComparer
+	base.Default
+	base.DefaultFactory[CheckVersion, *CheckVersion]
+	base.VersionComparer
 }
 
 func (a *CheckVersion) Path() action.Path {
 	return action.Path{"basic", "value_check", "version_neq"}
+}
+
+func (a *CheckVersion) Icon() string {
+	return "alpha-v-box-outline"
 }
 
 func (a *CheckVersion) Do(ctx context.Context, _ selenium.WebDriver, input *action.Args, version *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {

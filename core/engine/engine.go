@@ -11,6 +11,7 @@ import (
 
 type Engine interface {
 	InitEngine(*config.EngineConfig) error
+
 	RegisterAction(factory action.Factory) error
 	RegisterHook(registerItem *hook.RegisterInfo) error
 	Run(ctx context.Context, homepage *po.Homepage) (TaskID, error)
@@ -18,6 +19,11 @@ type Engine interface {
 	Load(ctx context.Context, homepage *po.Homepage, useCache bool) (*job.Flow, error)
 	RunAll(ctx context.Context) error
 	ActionHierarchy(ctx context.Context) (*action.HierarchyDTO, error)
+
+	//RegisterListOp(registerItem *ListOp) error
+	//RegisterVersionOp(registerItem *VersionOp) error
+	//GetListOps() ([]*ListOp, error)
+	//GetVersionOps() ([]*VersionOp, error)
 }
 
 var engine Engine

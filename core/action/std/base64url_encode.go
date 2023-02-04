@@ -5,14 +5,14 @@ import (
 	"encoding/base64"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
-	"software_updater/core/action/prototype"
+	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"sync"
 )
 
 type Base64URLEncode struct {
-	prototype.StringMutator
-	prototype.DefaultFactory[Base64URLEncode, *Base64URLEncode]
+	base.StringMutator
+	base.DefaultFactory[Base64URLEncode, *Base64URLEncode]
 }
 
 func (a *Base64URLEncode) Path() action.Path {

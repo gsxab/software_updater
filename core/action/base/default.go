@@ -1,4 +1,4 @@
-package prototype
+package base
 
 import (
 	"context"
@@ -8,6 +8,10 @@ import (
 )
 
 type Default struct {
+}
+
+func (d *Default) Icon() string {
+	return "ray-vertex"
 }
 
 func (d *Default) InElmNum() int {
@@ -39,4 +43,9 @@ func (r *DefaultFactory[T, PT]) NewAction(args string) (action.Action, error) {
 	ret := PT(new(T))
 	err := json.Unmarshal([]byte(args), ret)
 	return ret, err
+}
+
+func (r *DefaultFactory[T, PT]) ToProtoDTO() *action.ProtoDTO {
+	t := PT(new(T))
+	return t.ToDTO().ProtoDTO
 }

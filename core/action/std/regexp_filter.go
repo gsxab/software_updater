@@ -6,7 +6,7 @@ import (
 	"github.com/tebeka/selenium"
 	"regexp"
 	"software_updater/core/action"
-	"software_updater/core/action/prototype"
+	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"software_updater/core/logs"
 	"software_updater/core/util"
@@ -14,13 +14,17 @@ import (
 )
 
 type RegexpFilter struct {
-	prototype.DefaultFactory[RegexpFilter, *RegexpFilter]
+	base.DefaultFactory[RegexpFilter, *RegexpFilter]
 	Pattern string `json:"pattern"`
 	matcher *regexp.Regexp
 }
 
 func (r *RegexpFilter) Path() action.Path {
 	return action.Path{"selector", "filter", "regexp_filter"}
+}
+
+func (a *RegexpFilter) Icon() string {
+	return "filter-outline"
 }
 
 func (a *RegexpFilter) InElmNum() int {
@@ -68,8 +72,10 @@ func (a *RegexpFilter) Do(ctx context.Context, _ selenium.WebDriver, input *acti
 
 func (a *RegexpFilter) ToDTO() *action.DTO {
 	return &action.DTO{
-		Input:  []string{"nodes..."},
-		Output: []string{"node"},
+		ProtoDTO: &action.ProtoDTO{
+			Input:  []string{"nodes..."},
+			Output: []string{"node"},
+		},
 		Values: map[string]string{"pattern": a.Pattern},
 	}
 }

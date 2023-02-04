@@ -5,14 +5,14 @@ import (
 	"encoding/hex"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
-	"software_updater/core/action/prototype"
+	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"sync"
 )
 
 type HexEncode struct {
-	prototype.StringMutator
-	prototype.DefaultFactory[HexEncode, *HexEncode]
+	base.StringMutator
+	base.DefaultFactory[HexEncode, *HexEncode]
 }
 
 func (a *HexEncode) Path() action.Path {

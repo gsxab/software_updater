@@ -5,7 +5,7 @@ import (
 	"context"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
-	"software_updater/core/action/prototype"
+	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"software_updater/core/logs"
 	"software_updater/core/tools/web"
@@ -14,11 +14,15 @@ import (
 )
 
 type CURL struct {
-	prototype.Default
+	base.Default
 }
 
 func (a *CURL) Path() action.Path {
 	return action.Path{"curl", "access", "curl_content"}
+}
+
+func (a *CURL) Icon() string {
+	return "file-link"
 }
 
 func (a *CURL) InStrNum() int {
@@ -61,12 +65,18 @@ func (a *CURL) Do(ctx context.Context, driver selenium.WebDriver, input *action.
 
 func (a *CURL) ToDTO() *action.DTO {
 	return &action.DTO{
-		OpenPage: true,
-		Input:    []string{"rel_url"},
-		Output:   []string{"remote_data"},
+		ProtoDTO: a.ToProtoDTO(),
 	}
 }
 
 func (a *CURL) NewAction(_ string) (action.Action, error) {
 	return a, nil
+}
+
+func (a *CURL) ToProtoDTO() *action.ProtoDTO {
+	return &action.ProtoDTO{
+		OpenPage: true,
+		Input:    []string{"rel_url"},
+		Output:   []string{"remote_data"},
+	}
 }

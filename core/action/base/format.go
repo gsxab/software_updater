@@ -1,4 +1,4 @@
-package prototype
+package base
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
 	"software_updater/core/db/po"
-	"software_updater/core/util"
 	"sync"
 )
 
@@ -28,8 +27,9 @@ func (a *Format) Do(ctx context.Context, driver selenium.WebDriver, input *actio
 
 func (a *Format) ToDTO() *action.DTO {
 	return &action.DTO{
-		Input:  []string{"text"},
-		Output: []string{"formatted_text"},
-		Values: map[string]string{"pattern": a.Format, "skip": util.ToJSON(a.Skip)},
+		ProtoDTO: &action.ProtoDTO{
+			Input:  []string{"text"},
+			Output: []string{"formatted_text"},
+		},
 	}
 }

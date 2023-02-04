@@ -4,18 +4,22 @@ import (
 	"context"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
-	"software_updater/core/action/prototype"
+	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"software_updater/core/logs"
 	"sync"
 )
 
 type Click struct {
-	prototype.Default
+	base.Default
 }
 
 func (a *Click) Path() action.Path {
 	return action.Path{"browser", "interact", "click"}
+}
+
+func (a *Click) Icon() string {
+	return "cursor-default-click-outline"
 }
 
 func (a *Click) InElmNum() int {
@@ -34,11 +38,17 @@ func (a *Click) Do(ctx context.Context, _ selenium.WebDriver, input *action.Args
 
 func (a *Click) ToDTO() *action.DTO {
 	return &action.DTO{
-		OpenPage: true,
-		Input:    []string{"node"},
+		ProtoDTO: a.ToProtoDTO(),
 	}
 }
 
 func (a *Click) NewAction(string) (action.Action, error) {
 	return a, nil
+}
+
+func (a *Click) ToProtoDTO() *action.ProtoDTO {
+	return &action.ProtoDTO{
+		OpenPage: true,
+		Input:    []string{"node"},
+	}
 }
