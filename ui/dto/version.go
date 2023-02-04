@@ -2,7 +2,7 @@ package dto
 
 type VersionDTO struct {
 	Name        string  `json:"name"`
-	PageURL     string  `json:"page_url"`
+	HomepageURL string  `json:"homepage_url"`
 	Version     string  `json:"version"`
 	PrevVersion *string `json:"last_version"`
 	NextVersion *string `json:"next_version"`

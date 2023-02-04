@@ -253,7 +253,7 @@ func (a *App) reloadDetailVersion(ctx context.Context, id int, v string) error {
 
 func (a *App) fillDetailVal() {
 	a.detailVal = make([][]string, 0, 32)
-	a.detailVal = append(a.detailVal, []string{"page", a.detailData.PageURL, "URL", a.detailData.PageURL})
+	a.detailVal = append(a.detailVal, []string{"page", a.detailData.HomepageURL, "URL", a.detailData.HomepageURL})
 	a.detailVal = append(a.detailVal, []string{"version", a.detailData.Version})
 	if a.detailData.PrevVersion != nil {
 		a.detailVal = append(a.detailVal, []string{"previous version", *a.detailData.PrevVersion})

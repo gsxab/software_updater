@@ -33,7 +33,7 @@ func GetVersionDetail(ctx context.Context, name string, optionalPage *string, v 
 
 	data := &dto.VersionDTO{
 		Name:        name,
-		PageURL:     page,
+		HomepageURL: page,
 		Version:     v,
 		PrevVersion: version.Previous,
 		NextVersion: nil,

@@ -8,16 +8,16 @@ import (
 	"sync"
 )
 
-type URLBase64Encode struct {
+type Base64URLEncode struct {
 	StringMutator
-	DefaultFactory[URLBase64Encode, *URLBase64Encode]
+	DefaultFactory[Base64URLEncode, *Base64URLEncode]
 }
 
-func (a *URLBase64Encode) Path() Path {
+func (a *Base64URLEncode) Path() Path {
 	return Path{"encoder", "rfc4648", "url_base64_encode"}
 }
 
-func (a *URLBase64Encode) Do(_ context.Context, _ selenium.WebDriver, input *Args, _ *po.Version, _ *sync.WaitGroup) (output *Args, exit Result, err error) {
+func (a *Base64URLEncode) Do(_ context.Context, _ selenium.WebDriver, input *Args, _ *po.Version, _ *sync.WaitGroup) (output *Args, exit Result, err error) {
 	return a.Mutate(input, func(text string) string {
 		return base64.URLEncoding.EncodeToString([]byte(text))
 	})

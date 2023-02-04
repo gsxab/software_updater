@@ -2,6 +2,8 @@ package webui
 
 import (
 	"github.com/gin-gonic/gin"
+	"io/fs"
+	"mime"
 	"net/http"
 	"software_updater/core/config"
 	config2 "software_updater/ui/webui/config"
@@ -12,8 +14,23 @@ import (
 func RegisterRouters(r *gin.Engine) {
 	// screenshots
 	r.StaticFS("/static/screenshot", http.Dir(config.Current().Files.ScreenshotDir))
-	// generated html
-	r.StaticFS("/static/html", http.Dir(config.Current().Files.HTMLDir))
+	// generated html (compat)
+	//r.StaticFS("/static/html", http.Dir(config.Current().Files.HTMLDir))
+	// vue ui
+	jsFS, _ := fs.Sub(DistFiles, "dist/static/js")
+	cssFS, _ := fs.Sub(DistFiles, "dist/static/css")
+	//r.StaticFS("/static/", http.FS(staticFS))
+	r.StaticFS("/static/js/", http.FS(jsFS))
+	r.StaticFS("/static/css/", http.FS(cssFS))
+	r.GET("/", func(ctx *gin.Context) {
+		//	ctx.Redirect(http.StatusMovedPermanently, "/index.html")
+		//})
+		//r.GET("/index.html", func(ctx *gin.Context) {
+		data, err := DistFiles.ReadFile("dist/index.html")
+		if err != nil {
+		}
+		ctx.Data(http.StatusOK, mime.TypeByExtension(".html"), data)
+	})
 
 	// rpc
 	g := r.Group("/jsonrpc/v1", midware.CheckRPCSecret(config2.WebUIConfig.Secret))

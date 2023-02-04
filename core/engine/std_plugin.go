@@ -53,8 +53,8 @@ func DefaultPlugins(config *config.EngineConfig) []Plugin {
 				// encoding
 				//&action.Encoding{},
 				// base encoder (RFC3548/4648)
-				&action.URLBase64Decode{},
-				&action.URLBase64Encode{},
+				&action.Base64URLDecode{},
+				&action.Base64URLEncode{},
 				//&action.Base64Decode{},
 				//&action.Base64Encode{},
 				//&action.Base32Decode{},
