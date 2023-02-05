@@ -19,9 +19,11 @@ func RegisterRouters(r *gin.Engine) {
 	// vue ui
 	jsFS, _ := fs.Sub(DistFiles, "dist/static/js")
 	cssFS, _ := fs.Sub(DistFiles, "dist/static/css")
+	fontFS, _ := fs.Sub(DistFiles, "dist/static/fonts")
 	//r.StaticFS("/static/", http.FS(staticFS))
 	r.StaticFS("/static/js/", http.FS(jsFS))
 	r.StaticFS("/static/css/", http.FS(cssFS))
+	r.StaticFS("/static/fonts/", http.FS(fontFS))
 	r.GET("/", func(ctx *gin.Context) {
 		//	ctx.Redirect(http.StatusMovedPermanently, "/index.html")
 		//})

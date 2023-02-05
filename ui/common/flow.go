@@ -5,6 +5,7 @@ import (
 	"software_updater/core/db/dao"
 	"software_updater/core/db/po"
 	"software_updater/core/engine"
+	"software_updater/core/job"
 	"software_updater/core/logs"
 	"software_updater/ui/dto"
 )
@@ -25,6 +26,6 @@ func GetFlow(ctx context.Context, hp *po.Homepage, refresh bool) (*dto.FlowDTO, 
 	if err != nil {
 		return nil, err
 	}
-	data := flow.ToDTO()
+	data := job.ToFlowDTO(flow)
 	return data, nil
 }

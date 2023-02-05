@@ -26,7 +26,6 @@ func (j *LoggedJob) RunAction(ctx context.Context, driver selenium.WebDriver, ar
 
 func (j *LoggedJob) ToDTO() *DTO {
 	return &DTO{
-		ActionDTO: j.action.ToDTO(),
 		State:     j.state.Int(),
 		StateDesc: j.stateDesc,
 		DebugInfo: j.info,

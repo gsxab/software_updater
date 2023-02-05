@@ -14,6 +14,7 @@ type ActionTrie interface {
 	PutHook(action.Path, hook.Event, hook.Hook, *hook.Position) error
 	PutHookLeaf(action.Path, hook.Event, hook.Hook, *hook.Position) error
 	PutFactLeaf(action.Path, action.Factory) (action.Factory, error)
+	GetPath(string) action.Path
 	DTO() (*action.HierarchyDTO, error)
 }
 
@@ -22,11 +23,13 @@ func NewActionTrie() ActionTrie {
 		ActionTrieNode: &ActionTrieInternalNode{
 			children: make(map[string]ActionTrieNode),
 		},
+		namePath: make(map[string]action.Path),
 	}
 }
 
 type ActionTrieImpl struct {
 	ActionTrieNode
+	namePath map[string]action.Path
 }
 
 func (a *ActionTrieImpl) getNode(path action.Path) (node ActionTrieNode, err error) {
@@ -159,7 +162,13 @@ func (a *ActionTrieImpl) PutFactLeaf(keys action.Path, factory action.Factory) (
 	if err != nil {
 		return nil, err
 	}
-	return node.SetContent(factory), nil
+	old := node.SetContent(factory)
+	a.namePath[keys.Name()] = keys
+	return old, nil
+}
+
+func (a *ActionTrieImpl) GetPath(name string) action.Path {
+	return a.namePath[name]
 }
 
 func (a *ActionTrieImpl) DTO() (*action.HierarchyDTO, error) {

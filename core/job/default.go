@@ -159,7 +159,6 @@ func (j *DefaultJob) SetName(name string) {
 
 func (j *DefaultJob) ToDTO() *DTO {
 	return &DTO{
-		ActionDTO: j.action.ToDTO(),
 		State:     j.state.Int(),
 		StateDesc: j.stateDesc,
 	}
