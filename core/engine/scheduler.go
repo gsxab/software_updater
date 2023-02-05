@@ -47,7 +47,10 @@ func (s *DefaultScheduler) ScheduleForNoUpdate(_ *po.CurrentVersion, oldV *po.Ve
 	} else {
 		daysToSchedule = time.Duration(int(3 * daysToUpdate / 4))
 	}
-	return thisUpdate.Add(day * daysToSchedule)
+	nextUpdateTime := thisUpdate.Add(day * daysToSchedule)
+
+	nextUpdateDate := time.Date(nextUpdateTime.Year(), nextUpdateTime.Month(), nextUpdateTime.Day(), 0, 0, 0, 0, time.Local)
+	return nextUpdateDate
 }
 
 func (s *DefaultScheduler) ScheduleForUpdate(_ *po.CurrentVersion, oldV *po.Version, newV *po.Version) time.Time {
@@ -84,5 +87,8 @@ func (s *DefaultScheduler) ScheduleForUpdate(_ *po.CurrentVersion, oldV *po.Vers
 	} else {
 		daysToSchedule = time.Duration(int(daysToUpdate / 2))
 	}
-	return thisUpdate.Add(day * daysToSchedule)
+	nextUpdateTime := thisUpdate.Add(day * daysToSchedule)
+
+	nextUpdateDate := time.Date(nextUpdateTime.Year(), nextUpdateTime.Month(), nextUpdateTime.Day(), 0, 0, 0, 0, time.Local)
+	return nextUpdateDate
 }

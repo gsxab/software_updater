@@ -9,3 +9,8 @@ func FormatTime(t *time.Time, format string) *string {
 	result := (*t).Format(format)
 	return &result
 }
+
+func FormatTimeInt64(t int64, format string) string {
+	result := time.Unix(t, 0).Format(format)
+	return result
+}

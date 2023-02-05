@@ -29,7 +29,7 @@ func (a *StoreDate) Icon() string {
 
 func (a *StoreDate) Do(ctx context.Context, _ selenium.WebDriver, input *action.Args, version *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {
 	return a.ReadWithErr(ctx, input, func(text string) error {
-		t, err := time.Parse(a.Format, text) // ignore tz. only date to be shown, and we don't know the right time zones.
+		t, err := time.Parse(a.Format, text) // implicitly use UTC. only date to be shown, and we don't know the right time zones.
 		if err != nil {
 			logs.Error(ctx, "date parsing failed", err, "text", text)
 			return err

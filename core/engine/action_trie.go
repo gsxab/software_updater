@@ -76,7 +76,7 @@ func (a *ActionTrieImpl) getOrCreateLeafNode(path action.Path) (node ActionTrieN
 		if err != nil {
 			newNode = &ActionTrieInternalNode{
 				ActionTrieNodeBase: ActionTrieNodeBase{
-					path: strings.Join(path[:idx], "."),
+					path: strings.Join(path[:idx+1], "."),
 				},
 				children: make(map[string]ActionTrieNode),
 			}
@@ -89,7 +89,7 @@ func (a *ActionTrieImpl) getOrCreateLeafNode(path action.Path) (node ActionTrieN
 	}
 	leaf, err := node.Child(path[last])
 	if err != nil {
-		newNode := &ActionTrieLeaf{
+		newNode = &ActionTrieLeaf{
 			ActionTrieNodeBase: ActionTrieNodeBase{
 				path: path.String(),
 			},
@@ -98,11 +98,9 @@ func (a *ActionTrieImpl) getOrCreateLeafNode(path action.Path) (node ActionTrieN
 		if err != nil {
 			return nil, err
 		}
-		node = newNode
-	} else {
-		node = leaf
+		return newNode, nil
 	}
-	return
+	return leaf, nil
 }
 
 func (a *ActionTrieImpl) Search(keys action.Path) (action.Factory, *hook.ActionHooks, map[string]ActionTrieNode, error) {

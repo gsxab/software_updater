@@ -52,7 +52,7 @@ type Job interface {
 
 type Branch struct {
 	Jobs []Job
-	Next []*Branch
+	Next []*Branch // reserved for branching
 }
 
 type Flow struct {

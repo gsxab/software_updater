@@ -6,7 +6,6 @@ import (
 	"software_updater/core/logs"
 	"software_updater/core/util"
 	"software_updater/ui/common"
-	"software_updater/ui/webui/config"
 )
 
 type GetListRequest struct {
@@ -20,7 +19,7 @@ func GetList(ctx *gin.Context) {
 		return
 	}
 
-	data, err := common.GetList(ctx, config.WebUIConfig.DateFormat)
+	data, err := common.GetList(ctx)
 	if err != nil {
 		ctx.Status(http.StatusInternalServerError)
 		return

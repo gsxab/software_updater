@@ -17,6 +17,7 @@ import (
 	"software_updater/core/db/po"
 	"software_updater/core/job"
 	"software_updater/core/logs"
+	"software_updater/core/util"
 	"software_updater/core/util/optional"
 	"software_updater/ui/common"
 	"software_updater/ui/dto"
@@ -76,8 +77,9 @@ func (a *App) initGUI(ctx context.Context, fa fyne.App) error {
 			objects := object.(*fyne.Container).Objects
 			objects[0].(*widget.Label).SetText(a.listData[id].Name)
 			objects[1].(*widget.Label).SetText(optional.Or(a.listData[id].Version, "(no information available)"))
-			objects[2].(*widget.Label).SetText(optional.Or(a.listData[id].UpdateDate, "(not updated)"))
-			objects[3].(*widget.Label).SetText(optional.Or(a.listData[id].ScheduledDate, "(not scheduled)"))
+			// TODO
+			//objects[2].(*widget.Label).SetText(optional.Or(a.listData[id].UpdateDate, "(not updated)"))
+			//objects[3].(*widget.Label).SetText(optional.Or(a.listData[id].ScheduledDate, "(not scheduled)"))
 
 			buttons := objects[4].(*fyne.Container).Objects
 			if a.listData[id].Version != nil {
@@ -181,7 +183,7 @@ func (a *App) initGUI(ctx context.Context, fa fyne.App) error {
 }
 
 func (a *App) reloadListData(ctx context.Context) (err error) {
-	a.listData, err = common.GetList(ctx, clientUIConfig.DateFormat)
+	a.listData, err = common.GetList(ctx)
 	return err
 }
 
@@ -196,7 +198,7 @@ func (a *App) reloadDetailVersion(ctx context.Context, id int, v string) error {
 	name := a.listData[id].Name
 	page := a.listData[id].PageURL
 
-	version, err := common.GetVersionDetail(ctx, name, &page, v, clientUIConfig.DateFormat)
+	version, err := common.GetVersionDetail(ctx, name, &page, v)
 	if err != nil {
 		return err
 	}
@@ -262,9 +264,9 @@ func (a *App) fillDetailVal() {
 		a.detailVal = append(a.detailVal, []string{"next version", *a.detailData.NextVersion})
 	}
 	if a.detailData.RemoteDate != nil {
-		a.detailVal = append(a.detailVal, []string{"remote date", *a.detailData.RemoteDate})
+		a.detailVal = append(a.detailVal, []string{"remote date", util.FormatTimeInt64(a.detailData.RemoteDate.TS, clientUIConfig.DateFormat)})
 	}
-	a.detailVal = append(a.detailVal, []string{"update date", a.detailData.UpdateDate})
+	a.detailVal = append(a.detailVal, []string{"update date", util.FormatTimeInt64(a.detailData.UpdateDate.TS, clientUIConfig.DateFormat)})
 	if a.detailData.Link != nil {
 		a.detailVal = append(a.detailVal, []string{"link", *a.detailData.Link, "URL", *a.detailData.Link})
 	}

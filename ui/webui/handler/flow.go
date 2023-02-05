@@ -9,7 +9,7 @@ import (
 )
 
 type GetFlowRequest struct {
-	Name string
+	Name string `json:"name" form:"name" query:"name"`
 }
 
 func GetFlow(ctx *gin.Context) {

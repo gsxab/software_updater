@@ -4,12 +4,12 @@ import (
 	"context"
 	"software_updater/core/db/dao"
 	"software_updater/core/logs"
-	"software_updater/core/util"
 	"software_updater/core/util/optional"
 	"software_updater/ui/dto"
+	"time"
 )
 
-func GetVersionDetail(ctx context.Context, name string, optionalPage *string, v string, dateFormat string) (*dto.VersionDTO, error) {
+func GetVersionDetail(ctx context.Context, name string, optionalPage *string, v string) (*dto.VersionDTO, error) {
 	page, err := optional.OrLazy(optionalPage, func() (string, error) {
 		hpDAO := dao.Homepage
 		hp, err := hpDAO.WithContext(ctx).Where(hpDAO.Name.Eq(name)).Take()
@@ -37,8 +37,8 @@ func GetVersionDetail(ctx context.Context, name string, optionalPage *string, v 
 		Version:     v,
 		PrevVersion: nil,
 		NextVersion: nil,
-		RemoteDate:  util.FormatTime(version.RemoteDate, dateFormat),
-		UpdateDate:  *util.FormatTime(version.LocalTime, dateFormat),
+		RemoteDate:  dto.ToDateDTO(version.RemoteDate, time.UTC),
+		UpdateDate:  dto.ToDateDTO(version.LocalTime, time.Local),
 		Link:        version.Link,
 		Digest:      version.Digest,
 		Picture:     version.Picture,

@@ -57,8 +57,11 @@ func (e *DefaultEngine) Load(ctx context.Context, homepage *po.Homepage, useCach
 		}
 	}
 	flow, err := e.flowInitializer.Resolve(ctx, homepage.Actions, e.actionManager, e.config)
+	if err != nil {
+		return nil, err
+	}
 	e.activeFlows.Add(homepage.Name, flow)
-	return flow, err
+	return flow, nil
 }
 
 func (e *DefaultEngine) Run(ctx context.Context, hp *po.Homepage) (TaskID, error) {
@@ -67,7 +70,7 @@ func (e *DefaultEngine) Run(ctx context.Context, hp *po.Homepage) (TaskID, error
 		return 0, err
 	}
 
-	id, err := e.taskRunner.EnqueueJob(flow, hp.Current)
+	id, err := e.taskRunner.EnqueueJob(flow, hp.Current, hp.HomepageURL)
 	if err != nil {
 		return 0, err
 	}

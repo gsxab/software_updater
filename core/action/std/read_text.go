@@ -15,7 +15,7 @@ type ReadText struct {
 }
 
 func (a *ReadText) Path() action.Path {
-	return action.Path{"browser", "reader", "read_text"}
+	return action.Path{"browser", "reader", "read"}
 }
 
 func (a *ReadText) Icon() string {

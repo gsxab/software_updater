@@ -3,6 +3,7 @@ package engine
 import (
 	"context"
 	cache "github.com/gsxab/go-generic_lru"
+	cache2 "github.com/gsxab/go-generic_lru/lru_with_rw_lock"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
 	"software_updater/core/config"
@@ -22,6 +23,7 @@ type Task struct {
 	State job.State
 	Flow  *job.Flow
 	CV    *po.CurrentVersion
+	hpURL string
 	// runtime
 	Cancel func()
 	Wg     *sync.WaitGroup
@@ -29,11 +31,9 @@ type Task struct {
 
 type TaskRunner struct {
 	nextId  TaskID
-	running *sync.Mutex // locked if any task is running
-	pending *cache.Cache[TaskID, *Task]
-	pLock   sync.Mutex
-	done    *cache.Cache[TaskID, *Task]
-	dLock   sync.Mutex
+	running *sync.Mutex                // locked if any task is running
+	pending cache.Cache[TaskID, *Task] // with lock
+	done    cache.Cache[TaskID, *Task] // with lock. less used than p so always lock in d -> p order.
 	start   sync.Once
 	close   <-chan struct{}
 	dur     time.Duration
@@ -43,10 +43,8 @@ type TaskRunner struct {
 func NewTaskRunner(start bool, interval int, update func(context.Context, *po.CurrentVersion, *po.Version)) *TaskRunner {
 	result := &TaskRunner{
 		nextId:  0,
-		pending: cache.New[TaskID, *Task](0),
-		pLock:   sync.Mutex{},
-		done:    cache.New[TaskID, *Task](config.Current().Engine.DoneCache),
-		dLock:   sync.Mutex{},
+		pending: cache2.New[TaskID, *Task](0),
+		done:    cache2.New[TaskID, *Task](config.Current().Engine.DoneCache),
 		start:   sync.Once{},
 		close:   make(chan struct{}),
 		dur:     time.Duration(interval) * time.Second,
@@ -58,10 +56,8 @@ func NewTaskRunner(start bool, interval int, update func(context.Context, *po.Cu
 	return result
 }
 
-func (r *TaskRunner) EnqueueJob(flow *job.Flow, cv *po.CurrentVersion) (TaskID, error) {
+func (r *TaskRunner) EnqueueJob(flow *job.Flow, cv *po.CurrentVersion, homepageURL string) (TaskID, error) {
 	id := atomic.AddInt64(&r.nextId, 1)
-	r.pLock.Lock()
-	defer r.pLock.Unlock()
 	task := &Task{
 		ID:    id,
 		State: job.Init,
@@ -74,19 +70,18 @@ func (r *TaskRunner) EnqueueJob(flow *job.Flow, cv *po.CurrentVersion) (TaskID, 
 }
 
 func (r *TaskRunner) GetTaskState(id TaskID) (bool, job.State, error) {
-	r.dLock.Lock()
-	task, ok := r.done.Get(id)
+	var task *Task
+	var ok bool
+
+	task, ok = r.done.Get(id)
 	if ok {
 		return true, task.State, nil
 	}
-	r.dLock.Unlock()
 
-	r.pLock.Lock()
 	task, ok = r.pending.Get(id)
 	if ok {
 		return true, task.State, nil
 	}
-	r.pLock.Unlock()
 
 	return false, 0, nil
 }
@@ -109,7 +104,10 @@ func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.We
 		close(errStopChan)
 	}()
 
-	var args *action.Args
+	args := &action.Args{
+		Elements: []selenium.WebElement{},
+		Strings:  []string{task.hpURL},
+	}
 	now := time.Now()
 	v := &po.Version{
 		LocalTime:  &now,
@@ -197,9 +195,7 @@ func (r *TaskRunner) StartRunningRoutine() {
 				case <-r.close:
 					break loop
 				case <-t.C:
-					r.pLock.Lock()
 					_, task, ok := r.pending.GetOldest()
-					r.pLock.Unlock()
 					if !ok {
 						t.Reset(r.dur)
 						continue
@@ -214,15 +210,17 @@ func (r *TaskRunner) StartRunningRoutine() {
 						task.State = job.Failure
 					}
 
-					r.pLock.Lock()
-					r.dLock.Lock()
-					r.pending.Remove(task.ID)
-					r.done.Add(task.ID, task)
-					if task.State == job.Processing {
-						task.State = job.Success
-					}
-					r.dLock.Unlock()
-					r.pLock.Unlock()
+					// lock both, order: d -> p
+					r.done.ApplyRW(func(c cache.Cache[TaskID, *Task]) {
+						r.pending.ApplyRW(func(c2 cache.Cache[TaskID, *Task]) {
+							c2.Remove(task.ID)
+
+							c.Add(task.ID, task)
+							if task.State == job.Processing {
+								task.State = job.Success
+							}
+						})
+					})
 
 					t.Reset(time.Second)
 				}

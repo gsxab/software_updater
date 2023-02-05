@@ -17,7 +17,7 @@ type CSSSelectMultiple struct {
 }
 
 func (a *CSSSelectMultiple) Path() action.Path {
-	return action.Path{"selector", "css", "css_select_multiple"}
+	return action.Path{"browser", "selector", "css", "css_select_multiple"}
 }
 
 func (a *CSSSelectMultiple) Icon() string {

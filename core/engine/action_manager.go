@@ -41,6 +41,9 @@ func (m *ActionManager) Action(path action.Path, args string) (action.Action, []
 	if err != nil {
 		return nil, nil, fmt.Errorf("action not found, path: %s, error: %w", path, err)
 	}
+	if len(args) == 0 {
+		args = "{}"
+	}
 	a, err := factory.NewAction(args)
 	if err != nil {
 		return nil, nil, fmt.Errorf("action creation failed, path: %s, error: %w", path, err)

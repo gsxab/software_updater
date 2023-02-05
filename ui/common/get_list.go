@@ -5,11 +5,11 @@ import (
 	"software_updater/core/db"
 	"software_updater/core/db/po"
 	"software_updater/core/logs"
-	"software_updater/core/util"
 	"software_updater/ui/dto"
+	"time"
 )
 
-func GetList(ctx context.Context, dateFormat string) ([]*dto.ListItemDTO, error) {
+func GetList(ctx context.Context) ([]*dto.ListItemDTO, error) {
 	//hpDAO := dao.Homepage
 	//cvDAO := dao.CurrentVersion
 	//vDAO := dao.Version
@@ -31,10 +31,10 @@ func GetList(ctx context.Context, dateFormat string) ([]*dto.ListItemDTO, error)
 			PageURL: hp.HomepageURL,
 		}
 		if hp.Current != nil {
-			datum.ScheduledDate = util.FormatTime(hp.Current.ScheduledAt, dateFormat)
+			datum.ScheduledDate = dto.ToDateDTO(hp.Current.ScheduledAt, time.Local)
 			if hp.Current.Version != nil {
 				datum.Version = &hp.Current.Version.Version
-				datum.UpdateDate = util.FormatTime(hp.Current.Version.LocalTime, dateFormat)
+				datum.UpdateDate = dto.ToDateDTO(hp.Current.Version.LocalTime, time.Local)
 			}
 		}
 		data = append(data, datum)

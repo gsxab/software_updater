@@ -17,7 +17,7 @@ type CSSSelect struct {
 }
 
 func (a *CSSSelect) Path() action.Path {
-	return action.Path{"selector", "css", "css_select"}
+	return action.Path{"browser", "selector", "css", "css_select"}
 }
 
 func (a *CSSSelect) Icon() string {
