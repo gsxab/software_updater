@@ -19,7 +19,7 @@ func (a *Click) Path() action.Path {
 }
 
 func (a *Click) Icon() string {
-	return "cursor-default-click-outline"
+	return "mdi:mdi-cursor-default-click"
 }
 
 func (a *Click) InElmNum() int {

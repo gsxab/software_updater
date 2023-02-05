@@ -21,7 +21,7 @@ func (a *StoreVersion) Path() action.Path {
 }
 
 func (a *StoreVersion) Icon() string {
-	return "text-box-edit-outline"
+	return "mdi:mdi-text-box-check"
 }
 
 func (a *StoreVersion) Do(ctx context.Context, _ selenium.WebDriver, input *action.Args, version *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {

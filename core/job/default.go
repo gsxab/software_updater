@@ -15,7 +15,7 @@ type DefaultJob struct {
 	name      string
 	action    action.Action
 	hooks     []*hook.ActionHooks
-	state     State
+	state     State // Init, Failure; Cancelled; Ready; Processing; Success, Aborted
 	stateDesc string
 }
 

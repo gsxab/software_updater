@@ -24,7 +24,7 @@ func (a *StoreDate) Path() action.Path {
 }
 
 func (a *StoreDate) Icon() string {
-	return "clock-edit-outline"
+	return "mdi:mdi-clock-check"
 }
 
 func (a *StoreDate) Do(ctx context.Context, _ selenium.WebDriver, input *action.Args, version *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {

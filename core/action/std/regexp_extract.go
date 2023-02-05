@@ -25,7 +25,7 @@ func (a *RegexpExtract) Path() action.Path {
 }
 
 func (a *RegexpExtract) Icon() string {
-	return "regex"
+	return "mdi:mdi-regex"
 }
 
 func (a *RegexpExtract) Init(context.Context, *sync.WaitGroup) (err error) {

@@ -21,7 +21,7 @@ func (a *Access) Path() action.Path {
 }
 
 func (a *Access) Icon() string {
-	return "web"
+	return "mdi:mdi-web"
 }
 
 func (a *Access) OutElmNum() int {

@@ -18,7 +18,7 @@ func (a *ReturnEmpty) Path() action.Path {
 }
 
 func (a *ReturnEmpty) Icon() string {
-	return "null"
+	return "fa:fas fa-solid fa-empty-set"
 }
 
 func (a *ReturnEmpty) Do(context.Context, selenium.WebDriver, *action.Args, *po.Version, *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {

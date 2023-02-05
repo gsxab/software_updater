@@ -23,7 +23,7 @@ func (a *ReduceJoin) Path() action.Path {
 }
 
 func (a *ReduceJoin) Icon() string {
-	return "text-box-plus-outline"
+	return "mdi:mdi-text-box-plus"
 }
 
 func (a *ReduceJoin) OutStrNum() int {

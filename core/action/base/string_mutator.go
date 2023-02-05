@@ -14,7 +14,7 @@ type StringMutator struct {
 }
 
 func (a *StringMutator) Icon() string {
-	return "text-box-edit-outline"
+	return "mdi:mdi-text-box-edit"
 }
 
 func (a *StringMutator) Mutate(input *action.Args, mutate func(text string) string) (output *action.Args, exit action.Result, err error) {

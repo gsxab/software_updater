@@ -21,7 +21,7 @@ func (a *AppendFormat) Path() action.Path {
 }
 
 func (a *AppendFormat) Icon() string {
-	return "text-box-plus-outline"
+	return "mdi:mdi-text-box-plus"
 }
 
 func (a *AppendFormat) OutStrNum() int {

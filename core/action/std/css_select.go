@@ -21,7 +21,7 @@ func (a *CSSSelect) Path() action.Path {
 }
 
 func (a *CSSSelect) Icon() string {
-	return "select"
+	return "mdi:mdi-select"
 }
 
 func (a *CSSSelect) OutElmNum() int {

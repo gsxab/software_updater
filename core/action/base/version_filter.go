@@ -13,7 +13,7 @@ type VersionFilter struct {
 }
 
 func (a *VersionFilter) Icon() string {
-	return "alpha-v-box-outline"
+	return "mdi:mdi-alpha-v-circle"
 }
 
 func (a *VersionFilter) Filter(ctx context.Context, input *action.Args,

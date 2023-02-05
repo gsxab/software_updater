@@ -11,17 +11,12 @@ import (
 )
 
 type CheckVersion struct {
-	base.Default
 	base.DefaultFactory[CheckVersion, *CheckVersion]
 	base.VersionComparer
 }
 
 func (a *CheckVersion) Path() action.Path {
 	return action.Path{"basic", "value_check", "version_neq"}
-}
-
-func (a *CheckVersion) Icon() string {
-	return "alpha-v-box-outline"
 }
 
 func (a *CheckVersion) Do(ctx context.Context, _ selenium.WebDriver, input *action.Args, version *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {

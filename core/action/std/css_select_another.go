@@ -21,7 +21,7 @@ func (a *CSSSelectAppend) Path() action.Path {
 }
 
 func (a *CSSSelectAppend) Icon() string {
-	return "select-drag"
+	return "mdi:mdi-select-drag"
 }
 
 func (a *CSSSelectAppend) OutElmNum() int {

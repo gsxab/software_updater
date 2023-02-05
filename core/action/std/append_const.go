@@ -21,7 +21,7 @@ func (a *AppendConst) Path() action.Path {
 }
 
 func (a *AppendConst) Icon() string {
-	return "text-box-plus-outline"
+	return "mdi:mdi-text-box-plus"
 }
 
 func (a *AppendConst) OutStrNum() int {

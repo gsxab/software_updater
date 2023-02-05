@@ -23,7 +23,7 @@ func (a *ReduceFormat) Path() action.Path {
 }
 
 func (a *ReduceFormat) Icon() string {
-	return "text-box-plus-outline"
+	return "mdi:mdi-text-box-plus"
 }
 
 func (a *ReduceFormat) OutStrNum() int {

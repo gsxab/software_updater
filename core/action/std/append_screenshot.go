@@ -26,7 +26,7 @@ func (a *AppendScreenshot) Path() action.Path {
 }
 
 func (a *AppendScreenshot) Icon() string {
-	return "image-plus-outline"
+	return "mdi:mdi-image-plus-outline"
 }
 
 func (a *AppendScreenshot) OutStrNum() int {

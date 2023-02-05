@@ -21,7 +21,7 @@ func (r *ReturnConst) Path() action.Path {
 }
 
 func (a *ReturnConst) Icon() string {
-	return "text-box-outline"
+	return "mdi:mdi-text-box"
 }
 
 func (a *ReturnConst) OutStrNum() int {

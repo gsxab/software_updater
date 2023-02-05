@@ -19,7 +19,7 @@ func (a *ReadText) Path() action.Path {
 }
 
 func (a *ReadText) Icon() string {
-	return "magnify"
+	return "mdi:mdi-text-box-search"
 }
 
 func (a *ReadText) InElmNum() int {

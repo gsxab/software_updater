@@ -24,7 +24,7 @@ func (a *CURLSave) Path() action.Path {
 }
 
 func (a *CURLSave) Icon() string {
-	return "file-link"
+	return "mdi:mdi-console-network"
 }
 
 func (a *CURLSave) InStrNum() int {

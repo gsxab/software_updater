@@ -23,7 +23,7 @@ func (a *WaitFor) Path() action.Path {
 }
 
 func (a *WaitFor) Icon() string {
-	return "timer-outline"
+	return "mdi:mdi-timer"
 }
 
 func (a *WaitFor) Init(ctx context.Context, _ *sync.WaitGroup) (err error) {

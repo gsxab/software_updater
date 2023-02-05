@@ -24,7 +24,7 @@ func (r *RegexpFilter) Path() action.Path {
 }
 
 func (a *RegexpFilter) Icon() string {
-	return "filter-outline"
+	return "mdi:mdi-filter"
 }
 
 func (a *RegexpFilter) InElmNum() int {

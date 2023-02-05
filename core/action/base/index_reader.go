@@ -8,6 +8,7 @@ import (
 )
 
 type IndexReader struct {
+	Default
 	Index int `json:"index"`
 }
 

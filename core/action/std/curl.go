@@ -22,7 +22,7 @@ func (a *CURL) Path() action.Path {
 }
 
 func (a *CURL) Icon() string {
-	return "file-link"
+	return "mdi:mdi-console-network"
 }
 
 func (a *CURL) InStrNum() int {

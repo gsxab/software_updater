@@ -21,7 +21,7 @@ func (a *ReadAttr) Path() action.Path {
 }
 
 func (a *ReadAttr) Icon() string {
-	return "magnify"
+	return "mdi:mdi-text-box-search"
 }
 
 func (a *ReadAttr) InElmNum() int {

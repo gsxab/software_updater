@@ -21,7 +21,7 @@ func (a *CSSSelectMultiple) Path() action.Path {
 }
 
 func (a *CSSSelectMultiple) Icon() string {
-	return "select_multiple"
+	return "mdi:mdi-select-multiple"
 }
 
 func (a *CSSSelectMultiple) OutElmNum() int {
