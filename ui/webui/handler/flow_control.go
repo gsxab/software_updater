@@ -9,7 +9,7 @@ import (
 )
 
 type StartFlowRequest struct {
-	Name string
+	Name string `json:"name" form:"name" query:"name"`
 }
 
 type StartFlowData struct {

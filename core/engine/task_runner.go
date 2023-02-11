@@ -9,6 +9,7 @@ import (
 	"software_updater/core/config"
 	"software_updater/core/db/po"
 	"software_updater/core/job"
+	"software_updater/core/logs"
 	"software_updater/core/tools/web"
 	"software_updater/core/util/error_util"
 	"sync"
@@ -23,9 +24,9 @@ type Task struct {
 	State job.State
 	Flow  *job.Flow
 	CV    *po.CurrentVersion
-	hpURL string
+	HpURL string
 	// runtime
-	Cancel func()
+	Cancel context.CancelFunc
 	Wg     *sync.WaitGroup
 }
 
@@ -35,38 +36,46 @@ type TaskRunner struct {
 	pending cache.Cache[TaskID, *Task] // with lock
 	done    cache.Cache[TaskID, *Task] // with lock. less used than p so always lock in d -> p order.
 	start   sync.Once
-	close   <-chan struct{}
 	dur     time.Duration
 	update  func(ctx context.Context, cv *po.CurrentVersion, v *po.Version)
+	cancel  context.CancelFunc
 }
 
-func NewTaskRunner(start bool, interval int, update func(context.Context, *po.CurrentVersion, *po.Version)) *TaskRunner {
+func NewTaskRunner(ctx context.Context, start bool, interval int, update func(context.Context, *po.CurrentVersion, *po.Version)) *TaskRunner {
 	result := &TaskRunner{
 		nextId:  0,
+		running: &sync.Mutex{},
 		pending: cache2.New[TaskID, *Task](0),
 		done:    cache2.New[TaskID, *Task](config.Current().Engine.DoneCache),
 		start:   sync.Once{},
-		close:   make(chan struct{}),
 		dur:     time.Duration(interval) * time.Second,
 		update:  update,
 	}
 	if start {
-		go result.StartRunningRoutine()
+		ctx, result.cancel = context.WithCancel(ctx)
+		result.StartRunningRoutine(ctx)
 	}
 	return result
 }
 
-func (r *TaskRunner) EnqueueJob(flow *job.Flow, cv *po.CurrentVersion, homepageURL string) (TaskID, error) {
+func (r *TaskRunner) EnqueueJob(ctx context.Context, flow *job.Flow, cv *po.CurrentVersion, homepageURL string) (TaskID, error) {
 	id := atomic.AddInt64(&r.nextId, 1)
 	task := &Task{
 		ID:    id,
 		State: job.Init,
 		Flow:  flow,
 		CV:    cv,
+		HpURL: homepageURL,
 	}
+	logs.InfoM(ctx, "enqueueing job", "id", id)
 	r.pending.Add(id, task)
+	logs.InfoM(ctx, "enqueued job", "id", id)
 	task.State = job.Pending
 	return id, nil
+}
+
+func (r *TaskRunner) Stop(ctx context.Context) {
+	r.cancel()
 }
 
 func (r *TaskRunner) GetTaskState(id TaskID) (bool, job.State, error) {
@@ -89,6 +98,7 @@ func (r *TaskRunner) GetTaskState(id TaskID) (bool, job.State, error) {
 func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.WebDriver, cv *po.CurrentVersion) (*po.Version, error) {
 	r.running.Lock()
 	defer r.running.Unlock()
+	logs.InfoM(ctx, "starting task", "id", task.ID)
 
 	task.Wg = &sync.WaitGroup{}
 	errChan := make(chan error, 16)
@@ -106,7 +116,7 @@ func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.We
 
 	args := &action.Args{
 		Elements: []selenium.WebElement{},
-		Strings:  []string{task.hpURL},
+		Strings:  []string{task.HpURL},
 	}
 	now := time.Now()
 	v := &po.Version{
@@ -117,7 +127,7 @@ func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.We
 		Digest:     nil,
 		RemoteDate: nil,
 	}
-	if cv.Version != nil {
+	if cv != nil && cv.Version != nil {
 		v.Name = cv.Version.Name
 		v.Version = cv.Version.Version
 		v.Previous = &cv.Version.ID
@@ -179,20 +189,19 @@ func (r *TaskRunner) runBranch(ctx context.Context, branch *job.Branch, driver s
 	r.runBranch(ctx, branch.Next[0], driver, args, v, errs, task)
 }
 
-func (r *TaskRunner) StartRunningRoutine() {
+func (r *TaskRunner) StartRunningRoutine(ctx context.Context) {
 	r.start.Do(func() {
 		go func() {
 			t := time.NewTimer(r.dur)
 			defer func() {
-				if !t.Stop() {
-					<-t.C
+				if err := recover(); err != nil {
+					logs.ErrorM(context.Background(), "recovered failure", "err", err)
 				}
 			}()
-			ctx := context.Background()
 		loop:
 			for {
 				select {
-				case <-r.close:
+				case <-ctx.Done():
 					break loop
 				case <-t.C:
 					_, task, ok := r.pending.GetOldest()
@@ -211,11 +220,11 @@ func (r *TaskRunner) StartRunningRoutine() {
 					}
 
 					// lock both, order: d -> p
-					r.done.ApplyRW(func(c cache.Cache[TaskID, *Task]) {
-						r.pending.ApplyRW(func(c2 cache.Cache[TaskID, *Task]) {
-							c2.Remove(task.ID)
+					r.done.ApplyRW(func(d cache.Cache[TaskID, *Task]) {
+						r.pending.ApplyRW(func(p cache.Cache[TaskID, *Task]) {
+							p.Remove(task.ID)
 
-							c.Add(task.ID, task)
+							d.Add(task.ID, task)
 							if task.State == job.Processing {
 								task.State = job.Success
 							}

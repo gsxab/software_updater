@@ -10,7 +10,8 @@ import (
 )
 
 type Engine interface {
-	InitEngine(*config.EngineConfig) error
+	InitEngine(context.Context, *config.EngineConfig) error
+	DestroyEngine(context.Context, *config.EngineConfig)
 
 	RegisterAction(factory action.Factory) error
 	RegisterHook(registerItem *hook.RegisterInfo) error
@@ -30,7 +31,8 @@ var engine Engine
 
 func InitEngine(config *config.EngineConfig, extraPlugins ...Plugin) (Engine, error) {
 	engine = &DefaultEngine{}
-	err := engine.InitEngine(config)
+	ctx := context.Background()
+	err := engine.InitEngine(ctx, config)
 	if err != nil {
 		return nil, err
 	}
@@ -45,6 +47,10 @@ func InitEngine(config *config.EngineConfig, extraPlugins ...Plugin) (Engine, er
 	}
 
 	return engine, nil
+}
+
+func DestroyEngine(ctx context.Context, config *config.EngineConfig) {
+	engine.DestroyEngine(ctx, config)
 }
 
 func Instance() Engine {

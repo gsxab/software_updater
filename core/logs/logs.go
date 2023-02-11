@@ -21,10 +21,10 @@ const (
 
 var (
 	logLevel = InfoLevel
-	errorLog = log.New(os.Stdout, "ERROR", log.Ltime|log.Llongfile)
-	warnLog  = log.New(os.Stdout, "WARN", log.Ltime|log.Llongfile)
-	infoLog  = log.New(os.Stdout, "INFO", log.Ltime|log.Llongfile)
-	debugLog = log.New(os.Stdout, "DEBUG", log.Ltime|log.Llongfile)
+	errorLog = log.New(os.Stdout, "ERROR ", log.Ltime|log.Llongfile)
+	warnLog  = log.New(os.Stdout, "WARN  ", log.Ltime|log.Llongfile)
+	infoLog  = log.New(os.Stdout, "INFO  ", log.Ltime|log.Llongfile)
+	debugLog = log.New(os.Stdout, "DEBUG ", log.Ltime|log.Llongfile)
 )
 
 func SetLevel(level LogLevel) {

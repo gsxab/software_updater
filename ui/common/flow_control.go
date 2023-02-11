@@ -10,7 +10,7 @@ import (
 
 func StartFlowByName(ctx context.Context, name string) (engine.TaskID, error) {
 	hpDAO := dao.Homepage
-	hp, err := hpDAO.WithContext(ctx).Where(hpDAO.Name.Eq(name)).Take()
+	hp, err := hpDAO.WithContext(ctx).Preload(hpDAO.Current).Preload(hpDAO.Current.Version).Where(hpDAO.Name.Eq(name)).Take()
 	if err != nil {
 		logs.Error(ctx, "homepage query failed", err, "name", name)
 		return 0, err

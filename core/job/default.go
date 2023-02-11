@@ -7,6 +7,7 @@ import (
 	"software_updater/core/action"
 	"software_updater/core/db/po"
 	"software_updater/core/hook"
+	"software_updater/core/logs"
 	"software_updater/core/util/error_util"
 	"sync"
 )
@@ -80,33 +81,7 @@ func (j *DefaultJob) RunAction(ctx context.Context, driver selenium.WebDriver, a
 	}
 	// ready
 
-	// hooks: before run
-	for _, actionHooks := range j.hooks {
-		hooks := actionHooks.BeforeRun
-		for _, h := range hooks {
-			h.F(ctx, &hook.Variables{
-				ActionPtr: &j.action,
-				Input:     args,
-			}, j.name, errs)
-		}
-	}
-
-	// run action
-	output, result, err := j.action.Do(ctx, driver, args, v, wg)
-
-	// hooks: after run
-	for i := len(j.hooks) - 1; i >= 0; i++ {
-		hooks := j.hooks[i].AfterRun
-		for _, h := range hooks {
-			h.F(ctx, &hook.Variables{
-				ActionPtr: &j.action,
-				Input:     args,
-				Output:    output,
-				ResultPtr: &result,
-				ErrorPtr:  &err,
-			}, j.name, errs)
-		}
-	}
+	output, result, err := j.run(ctx, driver, args, v, errs, wg)
 
 	// after run
 	if err != nil {
@@ -133,6 +108,46 @@ func (j *DefaultJob) RunAction(ctx context.Context, driver selenium.WebDriver, a
 		j.state = Skipped
 	default:
 		errs.Collect(fmt.Errorf("invalid action state: %d", result))
+	}
+	return
+}
+
+func (j *DefaultJob) run(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version,
+	errs error_util.Collector, wg *sync.WaitGroup) (output *action.Args, result action.Result, err error) {
+	defer func() {
+		if msg := recover(); msg != nil {
+			logs.ErrorM(ctx, "panic", "msg", msg)
+			output = nil
+			err = msg.(error)
+		}
+	}()
+
+	// hooks: before run
+	for _, actionHooks := range j.hooks {
+		hooks := actionHooks.BeforeRun
+		for _, h := range hooks {
+			h.F(ctx, &hook.Variables{
+				ActionPtr: &j.action,
+				Input:     args,
+			}, j.name, errs)
+		}
+	}
+
+	// run action
+	output, result, err = j.action.Do(ctx, driver, args, v, wg)
+
+	// hooks: after run
+	for i := len(j.hooks) - 1; i >= 0; i-- {
+		hooks := j.hooks[i].AfterRun
+		for _, h := range hooks {
+			h.F(ctx, &hook.Variables{
+				ActionPtr: &j.action,
+				Input:     args,
+				Output:    output,
+				ResultPtr: &result,
+				ErrorPtr:  &err,
+			}, j.name, errs)
+		}
 	}
 	return
 }

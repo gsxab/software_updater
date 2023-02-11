@@ -28,17 +28,21 @@ type DefaultEngine struct {
 	driver          selenium.WebDriver
 }
 
-func (e *DefaultEngine) InitEngine(engineConfig *config.EngineConfig) error {
+func (e *DefaultEngine) InitEngine(ctx context.Context, engineConfig *config.EngineConfig) error {
 	e.activeFlows = cache.New(16)
 	e.actionManager = NewActionManager()
 	e.flowInitializer = NewFlowInitializer()
-	e.taskRunner = NewTaskRunner(true, engineConfig.RunnerCheck, func(ctx context.Context, cv *po.CurrentVersion, v *po.Version) {
+	e.taskRunner = NewTaskRunner(ctx, true, engineConfig.RunnerCheck, func(ctx context.Context, cv *po.CurrentVersion, v *po.Version) {
 		_ = e.updateCurrentVersion(ctx, v, cv)
 	})
 	e.scheduler = NewScheduler()
 	e.config = engineConfig
 	e.driver = web.Driver()
 	return nil
+}
+
+func (e *DefaultEngine) DestroyEngine(ctx context.Context, engineConfig *config.EngineConfig) {
+	e.taskRunner.Stop(ctx)
 }
 
 func (e *DefaultEngine) RegisterAction(factory action.Factory) error {
@@ -70,7 +74,7 @@ func (e *DefaultEngine) Run(ctx context.Context, hp *po.Homepage) (TaskID, error
 		return 0, err
 	}
 
-	id, err := e.taskRunner.EnqueueJob(flow, hp.Current, hp.HomepageURL)
+	id, err := e.taskRunner.EnqueueJob(ctx, flow, hp.Current, hp.HomepageURL)
 	if err != nil {
 		return 0, err
 	}

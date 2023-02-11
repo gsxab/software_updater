@@ -2,26 +2,19 @@ package common
 
 import (
 	"context"
-	"software_updater/core/db"
-	"software_updater/core/db/po"
+	"software_updater/core/db/dao"
 	"software_updater/core/logs"
 	"software_updater/ui/dto"
 	"time"
 )
 
 func GetList(ctx context.Context) ([]*dto.ListItemDTO, error) {
-	//hpDAO := dao.Homepage
-	//cvDAO := dao.CurrentVersion
-	//vDAO := dao.Version
+	hpDAO := dao.Homepage
 
-	hps := make([]*po.Homepage, 0)
-	result := db.DB().Debug().WithContext(ctx).Model(&hps).
-		Preload("Current").
-		Preload("Current.Version").
-		Find(&hps)
-	if result.Error != nil {
-		logs.Error(ctx, "list query failed", result.Error)
-		return nil, result.Error
+	hps, err := hpDAO.WithContext(ctx).Preload(hpDAO.Current).Preload(hpDAO.Current.Version).Find()
+	if err != nil {
+		logs.Error(ctx, "list query failed", err)
+		return nil, err
 	}
 
 	data := make([]*dto.ListItemDTO, 0, len(hps))

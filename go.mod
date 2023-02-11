@@ -72,3 +72,5 @@ require (
 	gorm.io/hints v1.1.0 // indirect
 	honnef.co/go/js/dom v0.0.0-20210725211120-f030747120f2 // indirect
 )
+
+replace github.com/gsxab/go-generic_lru => ../generic_lru
