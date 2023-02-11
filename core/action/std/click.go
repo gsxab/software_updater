@@ -26,13 +26,17 @@ func (a *Click) InElmNum() int {
 	return 1
 }
 
+func (a *Click) OutElmNum() int {
+	return 0
+}
+
 func (a *Click) Do(ctx context.Context, _ selenium.WebDriver, input *action.Args, _ *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {
-	output = input
 	err = input.Elements[0].Click()
 	if err != nil {
 		logs.Error(ctx, "selenium click failed", err)
 		return
 	}
+	output = action.ElementsToArgs([]selenium.WebElement{}, input)
 	return
 }
 

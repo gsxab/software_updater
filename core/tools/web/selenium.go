@@ -19,8 +19,11 @@ func InitSelenium(conf *config.SeleniumConfig) (err error) {
 		return err
 	}
 
+	prefs := make(map[string]interface{})
+	prefs["download_restrictions"] = 3
+
 	caps := selenium.Capabilities{}
-	caps.AddChrome(chrome.Capabilities{Args: conf.Params})
+	caps.AddChrome(chrome.Capabilities{Args: conf.Params, Prefs: prefs})
 
 	driver, err = selenium.NewRemote(caps, "")
 	if err != nil {

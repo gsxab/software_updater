@@ -136,7 +136,7 @@ func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.We
 	ctx, task.Cancel = context.WithCancel(ctx)
 	task.State = job.Processing
 	// multiple goroutines for var task, no write since here
-	r.runBranch(ctx, task.Flow.Root, driver, args, v, &error_util.ChannelCollector{Channel: errChan}, task)
+	update := r.runBranch(ctx, task.Flow.Root, driver, args, v, &error_util.ChannelCollector{Channel: errChan}, task)
 	task.Wg.Wait()
 	// wait for goroutines for var task
 	close(errChan)
@@ -154,11 +154,17 @@ func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.We
 		return nil, err
 	}
 
-	return v, err
+	if err != nil {
+		return nil, err
+	}
+	if !update {
+		return nil, nil
+	}
+	return v, nil
 }
 
 func (r *TaskRunner) runBranch(ctx context.Context, branch *job.Branch, driver selenium.WebDriver, args *action.Args,
-	v *po.Version, errs error_util.Collector, task *Task) {
+	v *po.Version, errs error_util.Collector, task *Task) (update bool) {
 	for _, j := range branch.Jobs {
 		if args == nil {
 			args = &action.Args{}
@@ -174,6 +180,7 @@ func (r *TaskRunner) runBranch(ctx context.Context, branch *job.Branch, driver s
 		}
 		args = output
 	}
+	update = args.Update
 
 	childCnt := len(branch.Next)
 	if childCnt == 0 {
@@ -182,11 +189,16 @@ func (r *TaskRunner) runBranch(ctx context.Context, branch *job.Branch, driver s
 	task.Wg.Add(childCnt - 1)
 	for i := 1; i < childCnt; i++ {
 		go func(branch2 *job.Branch) {
-			r.runBranch(ctx, branch2, driver, args, v, errs, task)
+			if r.runBranch(ctx, branch2, driver, args, v, errs, task) {
+				update = true
+			}
 			task.Wg.Done()
 		}(branch.Next[i])
 	}
-	r.runBranch(ctx, branch.Next[0], driver, args, v, errs, task)
+	if r.runBranch(ctx, branch.Next[0], driver, args, v, errs, task) {
+		update = true
+	}
+	return
 }
 
 func (r *TaskRunner) StartRunningRoutine(ctx context.Context) {

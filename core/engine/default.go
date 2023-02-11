@@ -64,6 +64,10 @@ func (e *DefaultEngine) Load(ctx context.Context, homepage *po.Homepage, useCach
 	if err != nil {
 		return nil, err
 	}
+	err = e.flowInitializer.InitFlow(ctx, flow)
+	if err != nil {
+		return nil, err
+	}
 	e.activeFlows.Add(homepage.Name, flow)
 	return flow, nil
 }
@@ -133,7 +137,7 @@ func (e *DefaultEngine) updateCurrentVersion(ctx context.Context, v *po.Version,
 		return err
 	}
 	schedule := e.scheduler.ScheduleForUpdate(cv, cv.Version, v)
-	info, err := cvDAO.WithContext(ctx).Where(vDAO.ID.Eq(cv.ID)).UpdateSimple(cvDAO.VersionID.Value(v.ID), cvDAO.ScheduledAt.Value(schedule))
+	info, err := cvDAO.WithContext(ctx).Where(cvDAO.ID.Eq(cv.ID)).UpdateSimple(cvDAO.VersionID.Value(v.ID), cvDAO.ScheduledAt.Value(schedule))
 	if err != nil {
 		logs.Error(ctx, "update current version failed", err, "cv", util.ToJSON(cv), "v.ID", v.ID)
 		return err

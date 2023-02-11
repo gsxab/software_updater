@@ -34,7 +34,7 @@ func (t *FlowInitializer) resolveBranch(ctx context.Context, storedBranch Stored
 	config *config.EngineConfig, errs *error_util.ErrorCollector) *job.Branch {
 	jobs := make([]job.Job, 0, len(storedBranch.Actions))
 	for _, storedAction := range storedBranch.Actions {
-		a, hooks, err := actionManager.Action(storedAction.Path, storedAction.JSON)
+		a, hooks, err := actionManager.Action(&storedAction)
 		errs.Collect(err)
 		jobs = append(jobs, t.NewJob(ctx, config, a, hooks))
 	}

@@ -8,6 +8,7 @@ import (
 type Args struct {
 	Elements []selenium.WebElement
 	Strings  []string
+	Update   bool
 }
 
 const (
@@ -22,6 +23,7 @@ func ElementsToArgs(elements []selenium.WebElement, input *Args) *Args {
 	}
 	if input != nil {
 		ret.Strings = input.Strings
+		ret.Update = input.Update
 	}
 	return ret
 }
@@ -32,6 +34,7 @@ func ElementToArgs(element selenium.WebElement, input *Args) *Args {
 	}
 	if input != nil {
 		ret.Strings = input.Strings
+		ret.Update = input.Update
 	}
 	return ret
 }
@@ -44,6 +47,7 @@ func AnotherElementToArgs(element selenium.WebElement, input *Args) *Args {
 	}
 	if input != nil {
 		ret.Strings = input.Strings
+		ret.Update = input.Update
 	}
 	return ret
 }
@@ -54,6 +58,7 @@ func StringsToArgs(strings []string, input *Args) *Args {
 	}
 	if input != nil {
 		ret.Elements = input.Elements
+		ret.Update = input.Update
 	}
 	return ret
 }
@@ -64,6 +69,7 @@ func StringToArgs(str string, input *Args) *Args {
 	}
 	if input != nil {
 		ret.Elements = input.Elements
+		ret.Update = input.Update
 	}
 	return ret
 }
@@ -76,6 +82,18 @@ func AnotherStringToArgs(str string, input *Args) *Args {
 	}
 	if input != nil {
 		ret.Elements = input.Elements
+		ret.Update = input.Update
+	}
+	return ret
+}
+
+func MarkUpdateToArgs(input *Args) *Args {
+	ret := &Args{
+		Update: true,
+	}
+	if input != nil {
+		ret.Elements = input.Elements
+		ret.Strings = input.Strings
 	}
 	return ret
 }

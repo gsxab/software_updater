@@ -13,7 +13,7 @@ import (
 type ReadAttr struct {
 	base.Default
 	base.DefaultFactory[ReadAttr, *ReadAttr]
-	Attribute string `json:"attribute"`
+	Attribute string `json:"attr"`
 }
 
 func (a *ReadAttr) Path() action.Path {

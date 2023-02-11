@@ -25,7 +25,7 @@ func (a *AppendConst) Icon() string {
 }
 
 func (a *AppendConst) OutStrNum() int {
-	return len(a.Val)
+	return action.OneMore
 }
 
 func (a *AppendConst) Do(ctx context.Context, driver selenium.WebDriver, input *action.Args, version *po.Version, wg *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {

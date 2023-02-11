@@ -13,43 +13,43 @@ import (
 	"sync"
 )
 
-type RegexpFilter struct {
+type RegexpFilterExtract struct {
 	base.DefaultFactory[RegexpFilter, *RegexpFilter]
 	Pattern   string `json:"pattern"`
 	FullMatch bool   `json:"full_match"`
 	matcher   *regexp.Regexp
 }
 
-func (r *RegexpFilter) Path() action.Path {
-	return action.Path{"selector", "filter", "regexp_filter"}
+func (r *RegexpFilterExtract) Path() action.Path {
+	return action.Path{"selector", "filter", "regexp_filter_extract"}
 }
 
-func (a *RegexpFilter) Icon() string {
-	return "mdi:mdi-filter"
+func (a *RegexpFilterExtract) Icon() string {
+	return "mdi:mdi-regex"
 }
 
-func (a *RegexpFilter) InElmNum() int {
+func (a *RegexpFilterExtract) InElmNum() int {
 	return action.Any
 }
 
-func (a *RegexpFilter) InStrNum() int {
+func (a *RegexpFilterExtract) InStrNum() int {
 	return action.Any
 }
 
-func (a *RegexpFilter) OutElmNum() int {
+func (a *RegexpFilterExtract) OutElmNum() int {
 	return 1
 }
 
-func (a *RegexpFilter) OutStrNum() int {
-	return action.Same
+func (a *RegexpFilterExtract) OutStrNum() int {
+	return 1
 }
 
-func (a *RegexpFilter) Init(context.Context, *sync.WaitGroup) (err error) {
+func (a *RegexpFilterExtract) Init(context.Context, *sync.WaitGroup) (err error) {
 	a.matcher, err = regexp.Compile(a.Pattern)
 	return
 }
 
-func (a *RegexpFilter) Do(ctx context.Context, _ selenium.WebDriver, input *action.Args, _ *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {
+func (a *RegexpFilterExtract) Do(ctx context.Context, _ selenium.WebDriver, input *action.Args, _ *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {
 	elements := input.Elements
 	var text string
 	for _, element := range elements {
@@ -58,9 +58,10 @@ func (a *RegexpFilter) Do(ctx context.Context, _ selenium.WebDriver, input *acti
 			logs.Error(ctx, "selenium element get_text failed", err)
 			return
 		}
-		matched := util.Match(a.matcher, a.FullMatch, text)
+		matched, results := util.MatchExtractMultiple(a.matcher, a.FullMatch, text)
 		if matched {
-			output = action.ElementToArgs(element, input)
+			output = action.StringsToArgs(results, input)
+			output.Elements = []selenium.WebElement{element}
 			break
 		}
 	}
@@ -69,11 +70,11 @@ func (a *RegexpFilter) Do(ctx context.Context, _ selenium.WebDriver, input *acti
 	return
 }
 
-func (a *RegexpFilter) ToDTO() *action.DTO {
+func (a *RegexpFilterExtract) ToDTO() *action.DTO {
 	return &action.DTO{
 		ProtoDTO: &action.ProtoDTO{
 			Input:  []string{"nodes..."},
-			Output: []string{"node"},
+			Output: []string{"text"},
 		},
 		Values: map[string]string{"pattern": a.Pattern},
 	}

@@ -17,7 +17,7 @@ type AccessConst struct {
 }
 
 func (a *AccessConst) Path() action.Path {
-	return action.Path{"browser", "access", "goto_url"}
+	return action.Path{"browser", "access", "goto_const"}
 }
 
 func (a *AccessConst) Icon() string {

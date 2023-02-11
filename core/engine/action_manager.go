@@ -36,7 +36,12 @@ func (m *ActionManager) RegisterHook(info *hook.RegisterInfo) error {
 	return err
 }
 
-func (m *ActionManager) Action(path action.Path, args string) (action.Action, []*hook.ActionHooks, error) {
+func (m *ActionManager) Action(storedAction *StoredAction) (action.Action, []*hook.ActionHooks, error) {
+	path := action.Path(storedAction.Path)
+	args := storedAction.JSON
+	if storedAction.Path == nil {
+		path = m.categories.GetPath(storedAction.Name)
+	}
 	factory, hooks, err := m.categories.SearchLeafAllHooks(path)
 	if err != nil {
 		return nil, nil, fmt.Errorf("action not found, path: %s, error: %w", path, err)
@@ -53,6 +58,7 @@ func (m *ActionManager) Action(path action.Path, args string) (action.Action, []
 
 type StoredAction struct {
 	Path []string `json:"path,omitempty"`
+	Name string   `json:"name,omitempty"`
 	JSON string   `json:"json,omitempty"`
 }
 

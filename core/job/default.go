@@ -52,7 +52,7 @@ func (j *DefaultJob) InitAction(ctx context.Context, errs error_util.Collector, 
 	err := j.action.Init(ctx, wg)
 
 	// hooks: after init
-	for i := len(j.hooks) - 1; i >= 0; i++ {
+	for i := len(j.hooks) - 1; i >= 0; i-- {
 		hooks := j.hooks[i].AfterInit
 		for _, h := range hooks {
 			h.F(ctx, &hook.Variables{
