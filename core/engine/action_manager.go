@@ -1,9 +1,12 @@
 package engine
 
 import (
+	"context"
 	"fmt"
 	"software_updater/core/action"
 	"software_updater/core/hook"
+	"software_updater/core/logs"
+	"software_updater/core/util"
 )
 
 type ActionManager struct {
@@ -36,14 +39,19 @@ func (m *ActionManager) RegisterHook(info *hook.RegisterInfo) error {
 	return err
 }
 
-func (m *ActionManager) Action(storedAction *StoredAction) (action.Action, []*hook.ActionHooks, error) {
+func (m *ActionManager) Action(ctx context.Context, storedAction *StoredAction) (action.Action, []*hook.ActionHooks, error) {
 	path := action.Path(storedAction.Path)
 	args := storedAction.JSON
 	if storedAction.Path == nil {
 		path = m.categories.GetPath(storedAction.Name)
 	}
+	if path == nil {
+		logs.ErrorM(ctx, "action path is nil", "stored_action", util.ToJSON(storedAction))
+		return nil, nil, fmt.Errorf("action path is nil, storedAction: %v", storedAction)
+	}
 	factory, hooks, err := m.categories.SearchLeafAllHooks(path)
-	if err != nil {
+	if err != nil || factory == nil {
+		logs.Error(ctx, "tree leaf search failed", err, "path", path, "err", err)
 		return nil, nil, fmt.Errorf("action not found, path: %s, error: %w", path, err)
 	}
 	if len(args) == 0 {

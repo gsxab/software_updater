@@ -11,4 +11,5 @@ type VersionDTO struct {
 	Link        *string  `json:"link,omitempty"`
 	Digest      *string  `json:"digest,omitempty"`
 	Picture     *string  `json:"picture,omitempty"`
+	FlowEnabled bool     `json:"flow_enabled"`
 }

@@ -10,6 +10,7 @@ import (
 )
 
 func GetVersionDetail(ctx context.Context, name string, optionalPage *string, v string) (*dto.VersionDTO, error) {
+	flowEnabled := true // default true, except when it is web and no-update
 	page, err := optional.OrLazy(optionalPage, func() (string, error) {
 		hpDAO := dao.Homepage
 		hp, err := hpDAO.WithContext(ctx).Where(hpDAO.Name.Eq(name)).Take()
@@ -17,6 +18,7 @@ func GetVersionDetail(ctx context.Context, name string, optionalPage *string, v 
 			logs.Error(ctx, "version query failed", err, "name", name, "v", v)
 			return "", err
 		}
+		flowEnabled = !hp.NoUpdate
 		return hp.HomepageURL, nil
 	})
 	if err != nil {
@@ -42,6 +44,7 @@ func GetVersionDetail(ctx context.Context, name string, optionalPage *string, v 
 		Link:        version.Link,
 		Digest:      version.Digest,
 		Picture:     version.Picture,
+		FlowEnabled: flowEnabled,
 	}
 
 	if version.Previous != nil {

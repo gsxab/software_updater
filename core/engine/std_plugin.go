@@ -23,7 +23,7 @@ func DefaultPlugins(config *config.EngineConfig) []Plugin {
 				&std.ReturnEmpty{},
 				&std.ReturnConst{},
 				&std.AppendConst{},
-				&std.WaitFor{},
+				&std.Wait{},
 				//&action.WaitUntilNext{},
 				// browser control
 				&std.AccessConst{},
@@ -68,6 +68,8 @@ func DefaultPlugins(config *config.EngineConfig) []Plugin {
 				// compare versions
 				&std.CheckVersion{},
 				&std.CheckLaterVersion{},
+				// mark update
+				&std.MarkUpdate{},
 				// curl a url
 				&std.CURL{},
 				&std.CURLSave{},

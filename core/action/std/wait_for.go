@@ -11,22 +11,22 @@ import (
 	"time"
 )
 
-type WaitFor struct {
+type Wait struct {
 	base.Default
-	base.DefaultFactory[WaitFor, *WaitFor]
+	base.DefaultFactory[Wait, *Wait]
 	Delay string `json:"delay"`
 	delay time.Duration
 }
 
-func (a *WaitFor) Path() action.Path {
+func (a *Wait) Path() action.Path {
 	return action.Path{"basic", "wait", "delay"}
 }
 
-func (a *WaitFor) Icon() string {
+func (a *Wait) Icon() string {
 	return "mdi:mdi-timer"
 }
 
-func (a *WaitFor) Init(ctx context.Context, _ *sync.WaitGroup) (err error) {
+func (a *Wait) Init(ctx context.Context, _ *sync.WaitGroup) (err error) {
 	a.delay, err = time.ParseDuration(a.Delay)
 	if err != nil {
 		logs.Error(ctx, "duration parsing failed", err, "duration", a.Delay)
@@ -35,7 +35,7 @@ func (a *WaitFor) Init(ctx context.Context, _ *sync.WaitGroup) (err error) {
 	return
 }
 
-func (a *WaitFor) Do(ctx context.Context, _ selenium.WebDriver, input *action.Args, _ *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {
+func (a *Wait) Do(ctx context.Context, _ selenium.WebDriver, input *action.Args, _ *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {
 	output = input
 	t := time.NewTimer(a.delay)
 	select {
@@ -50,7 +50,7 @@ func (a *WaitFor) Do(ctx context.Context, _ selenium.WebDriver, input *action.Ar
 	return
 }
 
-func (a *WaitFor) ToDTO() *action.DTO {
+func (a *Wait) ToDTO() *action.DTO {
 	return &action.DTO{
 		Values: map[string]string{"delay": a.Delay},
 	}
