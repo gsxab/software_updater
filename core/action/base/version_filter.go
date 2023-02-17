@@ -19,6 +19,7 @@ func (a *VersionFilter) Icon() string {
 func (a *VersionFilter) Filter(ctx context.Context, input *action.Args,
 	callback func(v *version_util.Version) (bool, action.Result),
 ) (output *action.Args, exit action.Result, err error) {
+	output = input
 
 	versionStr, err := a.ReadDirectly(ctx, input)
 	if err != nil {

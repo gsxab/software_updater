@@ -35,7 +35,7 @@ func format(kvs ...any) string {
 	sb := &strings.Builder{}
 	//_, _ = fmt.Fprintf(sb, "Module=%s Function=%s Message=%s", module, function, message)
 	for i := 0; i < len(kvs)-1; i += 2 {
-		_, _ = fmt.Fprintf(sb, " %s=%s", kvs[i], kvs[i+1])
+		_, _ = fmt.Fprintf(sb, " %s=%+v", kvs[i], kvs[i+1])
 	}
 	return sb.String()
 }

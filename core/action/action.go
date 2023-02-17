@@ -30,7 +30,6 @@ type ProtoDTO struct {
 	Name     string   `json:"name"`
 	Icon     string   `json:"icon"`
 	I18NName string   `json:"i18n_name"`
-	I18NFmt  string   `json:"i18n_fmt"`
 	ReadPage bool     `json:"read_page,omitempty"`
 	OpenPage bool     `json:"open_page,omitempty"`
 	Input    []string `json:"input,omitempty"`  // not used

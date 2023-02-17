@@ -5,8 +5,10 @@ import (
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
 	"software_updater/core/action/base"
+	"software_updater/core/config"
 	"software_updater/core/db/po"
 	"software_updater/core/logs"
+	"software_updater/core/util/url_util"
 	"sync"
 )
 
@@ -29,9 +31,25 @@ func (a *AccessConst) OutElmNum() int {
 }
 
 func (a *AccessConst) Do(ctx context.Context, driver selenium.WebDriver, _ *action.Args, _ *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {
-	err = driver.Get(a.URL)
+	base, err := driver.CurrentURL()
+	if err != nil {
+		logs.Error(ctx, "selenium get current url failed", err)
+		return
+	}
+	url, err := url_util.RelativeURL(base, a.URL)
+	if err != nil {
+		logs.Error(ctx, "relative url calculation failed", err)
+		return
+	}
+	err = driver.Get(url.String())
 	if err != nil {
 		logs.Error(ctx, "selenium url access failed", err, "URL", a.URL)
+		return
+	}
+	size := config.Current().Selenium.WindowSize
+	err = driver.ResizeWindow("", size.Width, size.Height)
+	if err != nil {
+		logs.Error(ctx, "selenium resize failed", err)
 		return
 	}
 	return

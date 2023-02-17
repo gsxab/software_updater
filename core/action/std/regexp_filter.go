@@ -61,7 +61,7 @@ func (a *RegexpFilter) Do(ctx context.Context, _ selenium.WebDriver, input *acti
 		matched := util.Match(a.matcher, a.FullMatch, text)
 		if matched {
 			output = action.ElementToArgs(element, input)
-			break
+			return
 		}
 	}
 	err = fmt.Errorf("find matching element failed, matcher: %s, elements: %v", a.Pattern, elements)

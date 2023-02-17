@@ -8,6 +8,7 @@ import (
 	"software_updater/core/hook"
 	"software_updater/core/job"
 	"software_updater/core/util/error_util"
+	"strconv"
 	"sync"
 )
 
@@ -24,24 +25,29 @@ func (t *FlowInitializer) Resolve(ctx context.Context, actionStr string, actionM
 	errs.Collect(json.Unmarshal([]byte(actionStr), &storedFlow))
 
 	flow := &job.Flow{
-		Root: t.resolveBranch(ctx, storedFlow.Root, actionManager, config, errs),
+		Root: t.resolveBranch(ctx, storedFlow.Root, actionManager, config, errs, ""),
 	}
 
 	return flow, errs.ToError()
 }
 
 func (t *FlowInitializer) resolveBranch(ctx context.Context, storedBranch StoredBranch, actionManager *ActionManager,
-	config *config.EngineConfig, errs *error_util.ErrorCollector) *job.Branch {
+	config *config.EngineConfig, errs *error_util.ErrorCollector, prefix string) *job.Branch {
 	jobs := make([]job.Job, 0, len(storedBranch.Actions))
-	for _, storedAction := range storedBranch.Actions {
+	for i, storedAction := range storedBranch.Actions {
 		a, hooks, err := actionManager.Action(ctx, &storedAction)
 		errs.Collect(err)
-		jobs = append(jobs, t.NewJob(ctx, config, a, hooks))
+		if a == nil {
+			continue
+		}
+		j := t.NewJob(ctx, config, a, hooks)
+		j.SetName(a.Path().Name() + prefix + "-" + strconv.Itoa(i))
+		jobs = append(jobs, j)
 	}
 
 	next := make([]*job.Branch, 0, len(storedBranch.Next))
-	for _, child := range storedBranch.Next {
-		branch := t.resolveBranch(ctx, child, actionManager, config, errs)
+	for i, child := range storedBranch.Next {
+		branch := t.resolveBranch(ctx, child, actionManager, config, errs, prefix+"-b"+strconv.Itoa(i))
 		next = append(next, branch)
 	}
 

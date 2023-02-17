@@ -38,6 +38,7 @@ func DefaultPlugins(config *config.EngineConfig) []Plugin {
 				//&action.XPathSelectMultiple{},
 				//&action.XPathSelectAppend{},
 				&std.RegexpFilter{},
+				&std.RegexpFilterExtract{},
 				//&action.ContainsFilter{},
 				// node reader
 				&std.ReadText{},

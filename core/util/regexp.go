@@ -22,7 +22,7 @@ func MatchExtractMultiple(matcher *regexp.Regexp, fullMatch bool, text string) (
 		return false, nil
 	}
 	results = make([]string, 0, len(indices)/2)
-	for i := 2; i*2 < len(indices); i += 2 {
+	for i := 2; i+1 < len(indices); i += 2 {
 		results = append(results, text[indices[i]:indices[i+1]])
 	}
 	return true, results

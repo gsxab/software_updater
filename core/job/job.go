@@ -67,8 +67,10 @@ type DebugInfo struct {
 
 type DTO struct {
 	ActionDTO *action.DTO `json:"action"`
+	JobName   string      `json:"job_name"`
 	State     int         `json:"state"`
 	StateDesc string      `json:"state_desc"`
+	Duration  *string     `json:"duration,omitempty"`
 	DebugInfo *DebugInfo  `json:"debug_info,omitempty"`
 }
 

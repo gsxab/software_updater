@@ -14,7 +14,7 @@ import (
 )
 
 type RegexpFilterExtract struct {
-	base.DefaultFactory[RegexpFilter, *RegexpFilter]
+	base.DefaultFactory[RegexpFilterExtract, *RegexpFilterExtract]
 	Pattern   string `json:"pattern"`
 	FullMatch bool   `json:"full_match"`
 	matcher   *regexp.Regexp
@@ -62,7 +62,7 @@ func (a *RegexpFilterExtract) Do(ctx context.Context, _ selenium.WebDriver, inpu
 		if matched {
 			output = action.StringsToArgs(results, input)
 			output.Elements = []selenium.WebElement{element}
-			break
+			return
 		}
 	}
 	err = fmt.Errorf("find matching element failed, matcher: %s, elements: %v", a.Pattern, elements)

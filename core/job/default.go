@@ -10,6 +10,7 @@ import (
 	"software_updater/core/logs"
 	"software_updater/core/util/error_util"
 	"sync"
+	"time"
 )
 
 type DefaultJob struct {
@@ -17,6 +18,8 @@ type DefaultJob struct {
 	action    action.Action
 	hooks     []*hook.ActionHooks
 	state     State // Init, Failure; Cancelled; Ready; Processing; Success, Aborted
+	start     time.Time
+	end       time.Time
 	stateDesc string
 }
 
@@ -44,7 +47,9 @@ func (j *DefaultJob) InitAction(ctx context.Context, errs error_util.Collector, 
 	for _, actionHooks := range j.hooks {
 		hooks := actionHooks.BeforeInit
 		for _, h := range hooks {
-			h.F(ctx, &hook.Variables{}, j.name, errs)
+			h.F(ctx, &hook.Variables{
+				ActionPtr: &j.action,
+			}, j.name, errs)
 		}
 	}
 
@@ -56,7 +61,8 @@ func (j *DefaultJob) InitAction(ctx context.Context, errs error_util.Collector, 
 		hooks := j.hooks[i].AfterInit
 		for _, h := range hooks {
 			h.F(ctx, &hook.Variables{
-				ErrorPtr: &err,
+				ActionPtr: &j.action,
+				ErrorPtr:  &err,
 			}, j.name, errs)
 		}
 	}
@@ -81,7 +87,38 @@ func (j *DefaultJob) RunAction(ctx context.Context, driver selenium.WebDriver, a
 	}
 	// ready
 
+	j.start = time.Now()
+	defer func() {
+		j.end = time.Now()
+	}()
+
+	// hooks: before init
+	for _, actionHooks := range j.hooks {
+		hooks := actionHooks.BeforeRun
+		for _, h := range hooks {
+			h.F(ctx, &hook.Variables{
+				ActionPtr: &j.action,
+				Input:     args,
+			}, j.name, errs)
+		}
+	}
+
+	// run
 	output, result, err := j.run(ctx, driver, args, v, errs, wg)
+
+	// hooks: after init
+	for i := len(j.hooks) - 1; i >= 0; i-- {
+		hooks := j.hooks[i].AfterRun
+		for _, h := range hooks {
+			h.F(ctx, &hook.Variables{
+				ActionPtr: &j.action,
+				Input:     args,
+				Output:    output,
+				ResultPtr: &result,
+				ErrorPtr:  &err,
+			}, j.name, errs)
+		}
+	}
 
 	// after run
 	if err != nil {
@@ -173,8 +210,14 @@ func (j *DefaultJob) SetName(name string) {
 }
 
 func (j *DefaultJob) ToDTO() *DTO {
-	return &DTO{
+	dto := &DTO{
+		JobName:   j.name,
 		State:     j.state.Int(),
 		StateDesc: j.stateDesc,
 	}
+	if !j.end.IsZero() {
+		duration := j.end.Sub(j.start).String()
+		dto.Duration = &duration
+	}
+	return dto
 }

@@ -2,9 +2,11 @@ package engine
 
 import (
 	"context"
+	"encoding/base64"
 	cache "github.com/gsxab/go-generic_lru"
 	cache2 "github.com/gsxab/go-generic_lru/lru_with_rw_lock"
 	"github.com/tebeka/selenium"
+	"os"
 	"software_updater/core/action"
 	"software_updater/core/config"
 	"software_updater/core/db/po"
@@ -135,7 +137,16 @@ func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.We
 
 	ctx, task.Cancel = context.WithCancel(ctx)
 	task.State = job.Processing
-	// multiple goroutines for var task, no write since here
+
+	var screenshot []byte
+	{
+		width, _ := driver.ExecuteScript("return document.body.scrollWidth;", nil)
+		height, _ := driver.ExecuteScript("return document.body.scrollHeight;", nil)
+		_ = driver.ResizeWindow("", int(width.(float64)), int(height.(float64)))
+		screenshot, _ = driver.Screenshot()
+	}
+
+	// there may be multiple goroutines for vars, no write since here
 	update := r.runBranch(ctx, task.Flow.Root, driver, args, v, &error_util.ChannelCollector{Channel: errChan}, task)
 	task.Wg.Wait()
 	// wait for goroutines for var task
@@ -159,6 +170,16 @@ func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.We
 	}
 	if !update {
 		return nil, nil
+	}
+
+	if v.Picture == nil {
+		filename := base64.URLEncoding.EncodeToString([]byte(v.Name)) + "@" + time.Now().Format("2006-01-02") + ".png"
+		err = os.WriteFile(filename, screenshot, os.FileMode(0o755))
+		if err != nil {
+			logs.Error(ctx, "write file failed", err)
+			return nil, err
+		}
+		v.Picture = &filename
 	}
 	return v, nil
 }
@@ -206,8 +227,8 @@ func (r *TaskRunner) StartRunningRoutine(ctx context.Context) {
 		go func() {
 			t := time.NewTimer(r.dur)
 			defer func() {
-				if err := recover(); err != nil {
-					logs.ErrorM(context.Background(), "recovered failure", "err", err)
+				if !t.Stop() {
+					<-t.C
 				}
 			}()
 		loop:
@@ -216,34 +237,44 @@ func (r *TaskRunner) StartRunningRoutine(ctx context.Context) {
 				case <-ctx.Done():
 					break loop
 				case <-t.C:
-					_, task, ok := r.pending.GetOldest()
-					if !ok {
-						t.Reset(r.dur)
-						continue
-					}
-
-					version, err := r.RunTask(ctx, task, web.Driver(), task.CV)
-
-					if version != nil {
-						r.update(ctx, task.CV, version)
-					}
-					if err != nil {
-						task.State = job.Failure
-					}
-
-					// lock both, order: d -> p
-					r.done.ApplyRW(func(d cache.Cache[TaskID, *Task]) {
-						r.pending.ApplyRW(func(p cache.Cache[TaskID, *Task]) {
-							p.Remove(task.ID)
-
-							d.Add(task.ID, task)
-							if task.State == job.Processing {
-								task.State = job.Success
+					func() {
+						plan := r.dur
+						defer func() {
+							if err := recover(); err != nil {
+								logs.ErrorM(context.Background(), "recovered failure", "err", err)
 							}
-						})
-					})
 
-					t.Reset(time.Second)
+							t.Reset(plan)
+						}()
+
+						_, task, ok := r.pending.GetOldest()
+						if !ok {
+							return
+						}
+
+						version, err := r.RunTask(ctx, task, web.Driver(), task.CV)
+
+						if version != nil {
+							r.update(ctx, task.CV, version)
+						}
+						if err != nil {
+							task.State = job.Failure
+						}
+
+						// lock both, order: d -> p
+						r.done.ApplyRW(func(d cache.Cache[TaskID, *Task]) {
+							r.pending.ApplyRW(func(p cache.Cache[TaskID, *Task]) {
+								p.Remove(task.ID)
+
+								d.Add(task.ID, task)
+								if task.State == job.Processing {
+									task.State = job.Success
+								}
+							})
+						})
+
+						plan = time.Second
+					}()
 				}
 			}
 		}()

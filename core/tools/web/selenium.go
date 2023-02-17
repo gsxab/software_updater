@@ -5,6 +5,7 @@ import (
 	"github.com/tebeka/selenium/chrome"
 	"log"
 	"software_updater/core/config"
+	"time"
 )
 
 var service *selenium.Service
@@ -26,6 +27,15 @@ func InitSelenium(conf *config.SeleniumConfig) (err error) {
 	caps.AddChrome(chrome.Capabilities{Args: conf.Params, Prefs: prefs})
 
 	driver, err = selenium.NewRemote(caps, "")
+	if err != nil {
+		return err
+	}
+
+	err = driver.SetImplicitWaitTimeout(time.Second * 60)
+	if err != nil {
+		return err
+	}
+	err = driver.SetPageLoadTimeout(time.Second * 60)
 	if err != nil {
 		return err
 	}

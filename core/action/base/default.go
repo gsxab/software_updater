@@ -42,7 +42,10 @@ type DefaultFactory[T any, PT interface {
 func (r *DefaultFactory[T, PT]) NewAction(args string) (action.Action, error) {
 	ret := PT(new(T))
 	err := json.Unmarshal([]byte(args), ret)
-	return ret, err
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
 }
 
 func (r *DefaultFactory[T, PT]) ToProtoDTO() *action.ProtoDTO {

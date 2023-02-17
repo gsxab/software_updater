@@ -8,7 +8,6 @@ import (
 	"software_updater/core/engine"
 	"software_updater/core/logs"
 	"software_updater/core/tools/web"
-	"software_updater/ui/client"
 	"software_updater/ui/webui"
 )
 
@@ -38,12 +37,6 @@ func main() {
 
 	uiMode := conf.Extra["ui_mode"]
 	switch uiMode {
-	case "client":
-		logs.WarnM(context.Background(), "client ui selected, which is not fully usable in current version!!!")
-		err = client.InitAndRun(context.Background(), conf.Extra["client_ui_setting"])
-		if err != nil {
-			log.Panic(err)
-		}
 	case "", "web":
 		logs.InfoM(context.Background(), "web ui selected")
 		err = webui.InitAndRun(context.Background(), conf.Extra["web_ui_setting"])

@@ -1,6 +1,7 @@
 package webui
 
 import (
+	ginI18n "github.com/fishjar/gin-i18n"
 	"github.com/gin-gonic/gin"
 	"io/fs"
 	"mime"
@@ -12,6 +13,9 @@ import (
 )
 
 func RegisterRouters(r *gin.Engine) {
+	ginI18n.LocalizerInit("zh-Hans", "zh-Hans,en-US", "./localize")
+	r.Use(ginI18n.GinLocalizer())
+
 	// screenshots
 	r.StaticFS("/static/screenshot", http.Dir(config.Current().Files.ScreenshotDir))
 	// generated html (compat)

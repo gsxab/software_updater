@@ -3,9 +3,7 @@ package webui
 import (
 	"context"
 	"encoding/json"
-	ginI18n "github.com/gin-contrib/i18n"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/text/language"
 	"log"
 	"net/http"
 	"os"
@@ -26,13 +24,6 @@ func InitAndRun(ctx context.Context, configExtraUI string) error {
 	}
 
 	r := gin.Default()
-	r.Use(ginI18n.Localize(ginI18n.WithBundle(&ginI18n.BundleCfg{
-		RootPath:         "./_example/localizeJSON",
-		AcceptLanguage:   []language.Tag{language.English, language.SimplifiedChinese},
-		DefaultLanguage:  language.English,
-		UnmarshalFunc:    json.Unmarshal,
-		FormatBundleFile: "json",
-	})))
 
 	RegisterRouters(r)
 

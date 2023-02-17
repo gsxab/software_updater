@@ -27,7 +27,13 @@ type DatabaseConfig struct {
 
 type SeleniumConfig struct {
 	Params     []string `yaml:"params,omitempty"`
+	WindowSize *Size    `yaml:"window_size,omitempty"`
 	DriverPath string   `yaml:"driver_path,omitempty"`
+}
+
+type Size struct {
+	Height int `yaml:"height,omitempty"`
+	Width  int `yaml:"width,omitempty"`
 }
 
 type EngineConfig struct {
@@ -52,7 +58,11 @@ func DefaultConfig() *Config {
 			DSN:    "./software.db",
 		},
 		Selenium: &SeleniumConfig{
-			Params:     nil,
+			Params: nil,
+			WindowSize: &Size{
+				Height: 1920,
+				Width:  1080,
+			},
 			DriverPath: "./chromedriver",
 		},
 		Engine: &EngineConfig{

@@ -5,6 +5,7 @@ import (
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
 	"software_updater/core/action/base"
+	"software_updater/core/config"
 	"software_updater/core/db/po"
 	"software_updater/core/logs"
 	"software_updater/core/util/url_util"
@@ -41,6 +42,16 @@ func (a *Access) Do(ctx context.Context, driver selenium.WebDriver, input *actio
 		return
 	}
 	err = driver.Get(url.String())
+	if err != nil {
+		logs.Error(ctx, "selenium get url failed", err, "baseURL", baseURL, "relURL", relURL)
+		return
+	}
+	size := config.Current().Selenium.WindowSize
+	err = driver.ResizeWindow("", size.Width, size.Height)
+	if err != nil {
+		logs.Error(ctx, "selenium resize failed", err)
+		return
+	}
 	output = action.ElementsToArgs([]selenium.WebElement{}, input)
 	return
 }

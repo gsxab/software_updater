@@ -18,7 +18,7 @@ type CURL struct {
 }
 
 func (a *CURL) Path() action.Path {
-	return action.Path{"curl", "access", "curl_content"}
+	return action.Path{"curl", "access", "curl"}
 }
 
 func (a *CURL) Icon() string {
