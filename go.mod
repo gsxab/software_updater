@@ -3,7 +3,6 @@ module software_updater
 go 1.18
 
 require (
-	github.com/andelf/go-curl v0.0.0-20200630032108-fd49ff24ed97
 	github.com/fishjar/gin-i18n v0.0.2
 	github.com/gin-gonic/gin v1.8.2
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e

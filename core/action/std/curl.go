@@ -52,7 +52,7 @@ func (a *CURL) Do(ctx context.Context, driver selenium.WebDriver, input *action.
 	}
 
 	buffer := new(bytes.Buffer)
-	err = web.CURL(url, selCookies, buffer)
+	err = web.CURL(ctx, url, selCookies, buffer)
 	if err != nil {
 		logs.Error(ctx, "cURL failed", err, "URL", url)
 		return

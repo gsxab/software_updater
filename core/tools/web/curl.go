@@ -1,46 +1,48 @@
 package web
 
-import "C"
 import (
-	"github.com/andelf/go-curl"
+	"context"
 	"github.com/tebeka/selenium"
 	"io"
 	"net/url"
-	"software_updater/core/util/error_util"
+	"os/exec"
 )
 
-func SeleniumCookiesToHeader(url *url.URL, cookies []selenium.Cookie) (result string) {
+func SeleniumCookiesToHeader(url *url.URL, cookies []selenium.Cookie) (result []string) {
 	for _, selCookie := range cookies {
 		if selCookie.Domain != url.Hostname() {
 			continue
 		}
-		result += selCookie.Name + "=" + selCookie.Value + ";"
+		result = append(result, "-H", selCookie.Name+"="+selCookie.Value)
 	}
 	return
 }
 
-func CURL(url *url.URL, cookies []selenium.Cookie, output io.Writer) error {
-	c := curl.EasyInit()
-	defer c.Cleanup()
-	errs := error_util.NewCollector()
-
-	errs.Collect(c.Setopt(curl.OPT_URL, url.String()))
-	errs.Collect(c.Setopt(curl.OPT_HTTPHEADER, "Cookie: "+SeleniumCookiesToHeader(url, cookies)))
-	errs.Collect(c.Setopt(curl.OPT_FOLLOWLOCATION, 1))
-	errs.Collect(c.Perform())
-
-	buffer := make([]byte, 1024)
-	for {
-		cnt, cErr := c.Recv(buffer)
-		_, err := output.Write(buffer[:cnt])
-		errs.Collect(err)
-		if curlErr := cErr.(curl.CurlError); int(curlErr) != int(curl.E_AGAIN) {
-			if cErr != nil {
-				errs.Collect(cErr)
-			}
-			break
-		}
+func CURL(ctx context.Context, url *url.URL, cookies []selenium.Cookie, output io.Writer) error {
+	curlCookies := SeleniumCookiesToHeader(url, cookies)
+	args := []string{"-s", "-L"}
+	args = append(args, curlCookies...)
+	args = append(args, url.String())
+	cmd := exec.CommandContext(ctx, "curl", args...)
+	stream, err := cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = stream.Close()
+	}()
+	err = cmd.Start()
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(output, stream)
+	if err != nil {
+		return err
+	}
+	err = cmd.Wait()
+	if err != nil {
+		return err
 	}
 
-	return errs.ToError()
+	return nil
 }

@@ -64,7 +64,7 @@ func (a *CURLSave) Do(ctx context.Context, driver selenium.WebDriver, input *act
 		}
 	}(file)
 
-	err = web.CURL(url, selCookies, file)
+	err = web.CURL(ctx, url, selCookies, file)
 	if err != nil {
 		logs.Error(ctx, "cURL failed", err, "URL", url)
 		return
