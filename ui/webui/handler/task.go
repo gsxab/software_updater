@@ -12,30 +12,38 @@
  * You should have received a copy of the GNU General Public License along with Software Update Watcher. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package std
+package handler
 
 import (
-	"context"
-	"encoding/hex"
-	"github.com/tebeka/selenium"
-	"software_updater/core/action"
-	"software_updater/core/action/base"
-	"software_updater/core/db/po"
-	"sync"
+	"github.com/gin-gonic/gin"
+	"net/http"
+	"software_updater/core/logs"
+	"software_updater/core/util"
+	"software_updater/ui/common"
 )
 
-type HexDecode struct {
-	base.StringMutator
-	base.DefaultFactory[HexDecode, *HexDecode]
+type GetTaskStateRequest struct {
+	TaskID int64 `json:"id" form:"id" query:"id"`
 }
 
-func (a *HexDecode) Path() action.Path {
-	return action.Path{"string", "decoder", "hex_decode"}
+type GetTaskStateData struct {
+	Exist bool `json:"exist" form:"exist" query:"exist"`
+	State int  `json:"state" form:"state" query:"state"`
 }
 
-func (a *HexDecode) Do(ctx context.Context, _ selenium.WebDriver, input *action.Args, _ *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {
-	return a.MutateWithErr(ctx, input, func(text string) (string, error) {
-		bytes, err := hex.DecodeString(text)
-		return string(bytes), err
-	})
+func GetTaskState(ctx *gin.Context) {
+	req := &GetTaskStateRequest{}
+	if err := ctx.ShouldBind(req); err != nil {
+		logs.Warn(ctx, "request param resolving failed", err, "req", util.ToJSON(req))
+		ctx.Status(http.StatusBadRequest)
+		return
+	}
+
+	exist, state, err := common.GetTaskByID(ctx, req.TaskID)
+	if err != nil {
+		ctx.Status(http.StatusInternalServerError)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, &GetTaskStateData{Exist: exist, State: state})
 }

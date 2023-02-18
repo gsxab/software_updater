@@ -1,3 +1,17 @@
+/*
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * Copyright (c) 2023. gsxab.
+ *
+ * This file is part of Software Update Watcher, a.k.a. Zhixin Robot.
+ *
+ * Software Update Watcher is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ * Software Update Watcher is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with Software Update Watcher. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package config
 
 import (
@@ -9,6 +23,7 @@ import (
 type Config struct {
 	Files    *FileConfig       `yaml:"files,omitempty"`
 	Database *DatabaseConfig   `yaml:"database,omitempty"`
+	CURL     *CURLConfig       `yaml:"curl,omitempty"`
 	Selenium *SeleniumConfig   `yaml:"selenium,omitempty"`
 	Engine   *EngineConfig     `yaml:"engine,omitempty"`
 	Extra    map[string]string `yaml:"extra,omitempty"`
@@ -22,6 +37,10 @@ type FileConfig struct {
 type DatabaseConfig struct {
 	Driver string `yaml:"driver,omitempty"`
 	DSN    string `yaml:"dsn,omitempty"`
+}
+
+type CURLConfig struct {
+	ExtraArgs []string `yaml:"extra_args,omitempty"`
 }
 
 type SeleniumConfig struct {
@@ -55,6 +74,9 @@ func DefaultConfig() *Config {
 		Database: &DatabaseConfig{
 			Driver: "sqlite",
 			DSN:    "./software.db",
+		},
+		CURL: &CURLConfig{
+			ExtraArgs: []string{},
 		},
 		Selenium: &SeleniumConfig{
 			Params: nil,

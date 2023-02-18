@@ -2,6 +2,8 @@
 
 ---
 
+Software Update Watcher is also known as Zhixin Robot (知新者).
+
 A crawler to fetch updates of pieces of software,
 written for software which is not used frequently enough to check updates or unable to,
 for where a software package manager or a marketplace is unavailable,
@@ -19,7 +21,7 @@ and for those who want to manage updates themselves.
 ### Configuration
 
 A YAML in the working directory is required to provide program configurations.
-`conf.yaml.example` is a template.
+`conf.example.yaml` is a template.
 
 ### Database Preparation
 
@@ -40,9 +42,23 @@ and compile it together to make a bundled application.
 
 The software is composed of a server (this repo) and a front-end project.
 Access the main page configured.
-And the front-end would list all the pieces of software and make basic operation.
+And the front-end would list all the pieces of software and make basic operation,
+which is the list page.
 
+#### List Page
 
+Every software is listed with a link to its latest version information here.
+Click it to navigate to the version information page.
+The button on the top-right starts all tasks scheduled before now.
+
+#### Version Information Page
+
+Tool buttons at the bottom of the version page are navigations to the last/next version,
+and the “timeline” button opens the flow page.
+
+#### Flow Page
+
+The flow page is the current status of the task.
 
 ---
 
@@ -71,3 +87,11 @@ Some features are not planned by now, for restricted manpower, which seems helpf
 Some features are blocked now.
 - Multi-branch flows. Hard to visualize and edit.
 - Optional and repetition flow nodes. Not useful enough in single-branch flows.
+
+#### Nouns in the Code
+
+- Action: The descriptive static information of something to do, such as its name, extra arguments, etc.
+- Hook: A function to call before or after the init or run of an action, potentially changing states. 
+- Job: An action with working information, such as status and run info.
+- Flow: Running unit. An organization of jobs to run in sequence, which may have branches.
+- Task: Scheduler unit. A current, past or future run of a flow.

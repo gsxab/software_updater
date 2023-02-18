@@ -1,0 +1,23 @@
+---
+files:
+  screenshot_dir: /tmp/zhixin/html/screenshots/
+  curl_save_dir: /tmp/zhixin/html/save/
+database:
+  driver: sqlite
+  dsn: ./software.db
+curl:
+  extra_args:
+    - "-x"
+    - "http://127.0.0.1:1234"
+selenium:
+  driver_path: "/bin/chromedriver.exe"
+  window_size:
+    width: 1920
+    height: 1080
+  params:
+    - "window-size=1920x1080"
+    - "--headless"
+    - "--disable-dev-shm-usage"
+    - "--proxy-server=http://127.0.0.1:1234"
+engine:
+  debug_log: true
