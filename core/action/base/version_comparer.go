@@ -19,6 +19,7 @@ func (a *VersionComparer) Compare(ctx context.Context, input *action.Args, prevI
 		if prevID == nil {
 			logs.InfoM(ctx, "check version skipping: no previous version")
 			exit = action.Skipped
+			return
 		}
 
 		vDAO := dao.Version

@@ -92,33 +92,8 @@ func (j *DefaultJob) RunAction(ctx context.Context, driver selenium.WebDriver, a
 		j.end = time.Now()
 	}()
 
-	// hooks: before init
-	for _, actionHooks := range j.hooks {
-		hooks := actionHooks.BeforeRun
-		for _, h := range hooks {
-			h.F(ctx, &hook.Variables{
-				ActionPtr: &j.action,
-				Input:     args,
-			}, j.name, errs)
-		}
-	}
-
 	// run
 	output, result, err := j.run(ctx, driver, args, v, errs, wg)
-
-	// hooks: after init
-	for i := len(j.hooks) - 1; i >= 0; i-- {
-		hooks := j.hooks[i].AfterRun
-		for _, h := range hooks {
-			h.F(ctx, &hook.Variables{
-				ActionPtr: &j.action,
-				Input:     args,
-				Output:    output,
-				ResultPtr: &result,
-				ErrorPtr:  &err,
-			}, j.name, errs)
-		}
-	}
 
 	// after run
 	if err != nil {
@@ -153,7 +128,7 @@ func (j *DefaultJob) run(ctx context.Context, driver selenium.WebDriver, args *a
 	errs error_util.Collector, wg *sync.WaitGroup) (output *action.Args, result action.Result, err error) {
 	defer func() {
 		if msg := recover(); msg != nil {
-			logs.ErrorM(ctx, "panic", "msg", msg)
+			logs.ErrorM(ctx, "recovered failure", "err", msg)
 			output = nil
 			err = msg.(error)
 		}

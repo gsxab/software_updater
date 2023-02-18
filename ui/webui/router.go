@@ -54,5 +54,6 @@ func RegisterRouters(r *gin.Engine) {
 	//g.DELETE("/flow/job", deleteFlow)
 	// flow state
 	g.POST("/flow/start", h.StartFlow)
+	g.POST("/flow/start_all", h.StartAllFlows)
 	//g.POST("/flow/cancel", h.CancelFlow)
 }

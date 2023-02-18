@@ -19,6 +19,11 @@ func StartFlowByName(ctx context.Context, name string) (engine.TaskID, error) {
 	return data, err
 }
 
+func StartAllFlows(ctx context.Context) error {
+	err := engine.Instance().RunAll(ctx)
+	return err
+}
+
 func StartFlow(ctx context.Context, hp *po.Homepage) (engine.TaskID, error) {
 	id, err := engine.Instance().Run(ctx, hp)
 	if err != nil {

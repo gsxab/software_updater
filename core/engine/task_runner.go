@@ -7,6 +7,7 @@ import (
 	cache2 "github.com/gsxab/go-generic_lru/lru_with_rw_lock"
 	"github.com/tebeka/selenium"
 	"os"
+	"path"
 	"software_updater/core/action"
 	"software_updater/core/config"
 	"software_updater/core/db/po"
@@ -23,6 +24,7 @@ type TaskID = int64
 
 type Task struct {
 	ID    TaskID
+	Name  string
 	State job.State
 	Flow  *job.Flow
 	CV    *po.CurrentVersion
@@ -60,18 +62,19 @@ func NewTaskRunner(ctx context.Context, start bool, interval int, update func(co
 	return result
 }
 
-func (r *TaskRunner) EnqueueJob(ctx context.Context, flow *job.Flow, cv *po.CurrentVersion, homepageURL string) (TaskID, error) {
+func (r *TaskRunner) EnqueueJob(ctx context.Context, flow *job.Flow, name string, cv *po.CurrentVersion, homepageURL string) (TaskID, error) {
 	id := atomic.AddInt64(&r.nextId, 1)
 	task := &Task{
 		ID:    id,
+		Name:  name,
 		State: job.Init,
 		Flow:  flow,
 		CV:    cv,
 		HpURL: homepageURL,
 	}
-	logs.InfoM(ctx, "enqueueing job", "id", id)
+	logs.InfoM(ctx, "enqueueing job", "id", id, "name", name)
 	r.pending.Add(id, task)
-	logs.InfoM(ctx, "enqueued job", "id", id)
+	logs.InfoM(ctx, "enqueued job", "id", id, "name", name)
 	task.State = job.Pending
 	return id, nil
 }
@@ -100,7 +103,8 @@ func (r *TaskRunner) GetTaskState(id TaskID) (bool, job.State, error) {
 func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.WebDriver, cv *po.CurrentVersion) (*po.Version, error) {
 	r.running.Lock()
 	defer r.running.Unlock()
-	logs.InfoM(ctx, "starting task", "id", task.ID)
+	logs.InfoM(ctx, "starting task", "id", task.ID, "name", task.Name)
+	defer logs.InfoM(ctx, "finished task", "id", task.ID)
 
 	task.Wg = &sync.WaitGroup{}
 	errChan := make(chan error, 16)
@@ -174,7 +178,7 @@ func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.We
 
 	if v.Picture == nil {
 		filename := base64.URLEncoding.EncodeToString([]byte(v.Name)) + "@" + time.Now().Format("2006-01-02") + ".png"
-		err = os.WriteFile(filename, screenshot, os.FileMode(0o755))
+		err = os.WriteFile(path.Join(config.Current().Files.ScreenshotDir, filename), screenshot, os.FileMode(0o755))
 		if err != nil {
 			logs.Error(ctx, "write file failed", err)
 			return nil, err
@@ -226,15 +230,13 @@ func (r *TaskRunner) StartRunningRoutine(ctx context.Context) {
 	r.start.Do(func() {
 		go func() {
 			t := time.NewTimer(r.dur)
-			defer func() {
-				if !t.Stop() {
-					<-t.C
-				}
-			}()
 		loop:
 			for {
 				select {
 				case <-ctx.Done():
+					if !t.Stop() {
+						<-t.C
+					}
 					break loop
 				case <-t.C:
 					func() {
@@ -249,6 +251,7 @@ func (r *TaskRunner) StartRunningRoutine(ctx context.Context) {
 
 						_, task, ok := r.pending.GetOldest()
 						if !ok {
+							logs.InfoM(ctx, "no task is found pending now")
 							return
 						}
 

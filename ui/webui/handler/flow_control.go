@@ -12,8 +12,12 @@ type StartFlowRequest struct {
 	Name string `json:"name" form:"name" query:"name"`
 }
 
+type StartAllFlowsRequest struct {
+	Force bool `json:"force" form:"force" query:"force"`
+}
+
 type StartFlowData struct {
-	ID int64
+	ID int64 `json:"id"`
 }
 
 func StartFlow(ctx *gin.Context) {
@@ -31,6 +35,24 @@ func StartFlow(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, &StartFlowData{ID: id})
+}
+
+func StartAllFlows(ctx *gin.Context) {
+	req := &StartAllFlowsRequest{}
+	if err := ctx.ShouldBind(req); err != nil {
+		logs.Warn(ctx, "request param resolving failed", err, "req", util.ToJSON(req))
+		ctx.Status(http.StatusBadRequest)
+		return
+	}
+
+	err := common.StartAllFlows(ctx)
+	if err != nil {
+		logs.Error(ctx, "start all flows failed", err, "req", util.ToJSON(req))
+		ctx.Status(http.StatusInternalServerError)
+		return
+	}
+
+	ctx.Status(http.StatusOK)
 }
 
 //type CancelFlowRequest struct {

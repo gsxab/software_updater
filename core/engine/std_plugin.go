@@ -50,6 +50,7 @@ func DefaultPlugins(config *config.EngineConfig) []Plugin {
 				&std.RegexpExtract{},
 				&base.Format{},
 				&std.ReduceFormat{},
+				&std.ReduceJoin{},
 				&std.AppendFormat{},
 				&std.URLUnescape{},
 				&std.URLEscape{},

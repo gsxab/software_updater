@@ -16,7 +16,6 @@ type Config struct {
 
 type FileConfig struct {
 	ScreenshotDir string `yaml:"screenshot_dir,omitempty"`
-	HTMLDir       string `yaml:"html_dir,omitempty"`
 	CURLSaveDir   string `yaml:"curl_save_dir,omitempty"`
 }
 
@@ -51,7 +50,7 @@ func DefaultConfig() *Config {
 	return &Config{
 		Files: &FileConfig{
 			ScreenshotDir: "./screenshot/",
-			HTMLDir:       "./html/",
+			CURLSaveDir:   "./save/",
 		},
 		Database: &DatabaseConfig{
 			Driver: "sqlite",

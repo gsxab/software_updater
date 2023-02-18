@@ -78,7 +78,7 @@ func (e *DefaultEngine) Run(ctx context.Context, hp *po.Homepage) (TaskID, error
 		return 0, err
 	}
 
-	id, err := e.taskRunner.EnqueueJob(ctx, flow, hp.Current, hp.HomepageURL)
+	id, err := e.taskRunner.EnqueueJob(ctx, flow, hp.Name, hp.Current, hp.HomepageURL)
 	if err != nil {
 		return 0, err
 	}
@@ -96,7 +96,8 @@ func (e *DefaultEngine) NeedCrawl(ctx context.Context) (hps []*po.Homepage, err 
 	if e.config.ForceCrawl {
 		hps, err = hpDAO.WithContext(ctx).Find()
 	} else {
-		hps, err = hpDAO.WithContext(ctx).LeftJoin(cvDAO).
+		hps, err = hpDAO.WithContext(ctx).Where(hpDAO.NoUpdate.Is(false)).
+			Preload(hpDAO.Current).Preload(hpDAO.Current.Version).LeftJoin(cvDAO, cvDAO.Name.EqCol(hpDAO.Name)).
 			Where(cvDAO.ScheduledAt.IsNull()).Or(cvDAO.ScheduledAt.Lte(time.Now())).
 			Find()
 	}

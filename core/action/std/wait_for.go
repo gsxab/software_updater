@@ -42,10 +42,10 @@ func (a *Wait) Do(ctx context.Context, _ selenium.WebDriver, input *action.Args,
 	case <-ctx.Done():
 		logs.WarnM(ctx, "delay action cancelled")
 		exit = action.Cancelled
+		if !t.Stop() {
+			<-t.C
+		}
 	case <-t.C:
-	}
-	if !t.Stop() {
-		<-t.C
 	}
 	return
 }
