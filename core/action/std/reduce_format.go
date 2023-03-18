@@ -29,7 +29,6 @@ type ReduceFormat struct {
 	base.StringMutator
 	base.DefaultFactory[ReduceFormat, *ReduceFormat]
 	Format string `json:"format"`
-	Skip   []int  `json:"skip,omitempty"`
 }
 
 func (a *ReduceFormat) Path() action.Path {

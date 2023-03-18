@@ -28,8 +28,7 @@ import (
 type ReduceJoin struct {
 	base.StringMutator
 	base.DefaultFactory[ReduceJoin, *ReduceJoin]
-	Sep  string `json:"sep"`
-	Skip []int  `json:"skip,omitempty"`
+	Sep string `json:"sep"`
 }
 
 func (a *ReduceJoin) Path() action.Path {
