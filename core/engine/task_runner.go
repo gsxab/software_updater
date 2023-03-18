@@ -16,12 +16,9 @@ package engine
 
 import (
 	"context"
-	"encoding/base64"
 	cache "github.com/gsxab/go-generic_lru"
 	cache2 "github.com/gsxab/go-generic_lru/lru_with_rw_lock"
 	"github.com/tebeka/selenium"
-	"os"
-	"path"
 	"software_updater/core/action"
 	"software_updater/core/config"
 	"software_updater/core/db/po"
@@ -156,14 +153,6 @@ func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.We
 	ctx, task.Cancel = context.WithCancel(ctx)
 	task.State = job.Processing
 
-	var screenshot []byte
-	{
-		width, _ := driver.ExecuteScript("return document.body.scrollWidth;", nil)
-		height, _ := driver.ExecuteScript("return document.body.scrollHeight;", nil)
-		_ = driver.ResizeWindow("", int(width.(float64)), int(height.(float64)))
-		screenshot, _ = driver.Screenshot()
-	}
-
 	// there may be multiple goroutines for vars, no write since here
 	update := r.runBranch(ctx, task.Flow.Root, driver, args, v, &error_util.ChannelCollector{Channel: errChan}, task)
 	task.Wg.Wait()
@@ -191,13 +180,12 @@ func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.We
 	}
 
 	if v.Picture == nil {
-		filename := base64.URLEncoding.EncodeToString([]byte(v.Name)) + "@" + time.Now().Format("2006-01-02") + ".png"
-		err = os.WriteFile(path.Join(config.Current().Files.ScreenshotDir, filename), screenshot, os.FileMode(0o755))
+		filename, err := web.TakeScreenshot(ctx, driver, v.Name)
 		if err != nil {
-			logs.Error(ctx, "write file failed", err)
-			return nil, err
+			logs.Warn(ctx, "ignoring error in taking a screenshot", err)
+		} else {
+			v.Picture = &filename
 		}
-		v.Picture = &filename
 	}
 	return v, nil
 }

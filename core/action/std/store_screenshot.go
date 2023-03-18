@@ -18,62 +18,52 @@ import (
 	"context"
 	"encoding/base64"
 	"github.com/tebeka/selenium"
-	"io/fs"
-	"os"
-	"path"
 	"software_updater/core/action"
 	"software_updater/core/action/base"
-	"software_updater/core/config"
 	"software_updater/core/db/po"
 	"software_updater/core/logs"
+	"software_updater/core/tools/web"
 	"sync"
 	"time"
 )
 
-type AppendScreenshot struct {
+type StoreScreenshot struct {
 	base.Default
-	base.DefaultFactory[AppendScreenshot, *AppendScreenshot]
+	base.DefaultFactory[StoreScreenshot, *StoreScreenshot]
 }
 
-func (a *AppendScreenshot) Path() action.Path {
+func (a *StoreScreenshot) Path() action.Path {
 	return action.Path{"browser", "reader", "append_screenshot"}
 }
 
-func (a *AppendScreenshot) Icon() string {
+func (a *StoreScreenshot) Icon() string {
 	return "mdi:mdi-image-plus-outline"
 }
 
-func (a *AppendScreenshot) OutStrNum() int {
+func (a *StoreScreenshot) OutStrNum() int {
 	return action.OneMore
 }
 
-func (a *AppendScreenshot) getFilename(name string) string {
+func (a *StoreScreenshot) getFilename(name string) string {
 	encodedName := base64.URLEncoding.EncodeToString([]byte(name))
 	dateSuffix := time.Now().Format("2006-01-02")
 	return encodedName + "@" + dateSuffix + ".png"
 }
 
-func (a *AppendScreenshot) Do(ctx context.Context, driver selenium.WebDriver, input *action.Args, version *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {
-	bytes, err := driver.Screenshot()
+func (a *StoreScreenshot) Do(ctx context.Context, driver selenium.WebDriver, input *action.Args, version *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {
+	filename, err := web.TakeScreenshot(ctx, driver, version.Name)
 	if err != nil {
 		logs.Error(ctx, "selenium screenshot failed", err)
 		return
 	}
-	filename := a.getFilename(version.Name)
-	pathname := path.Join(config.Current().Files.ScreenshotDir, filename)
-	err = os.WriteFile(pathname, bytes, fs.FileMode(0o644))
-	if err != nil {
-		logs.Error(ctx, "screenshot saving failed", err, "filename", filename, "pathname", pathname)
-		return
-	}
-	output = action.AnotherStringToArgs(filename, input)
+
+	version.Picture = &filename
+	output = input
 	return
 }
 
-func (a *AppendScreenshot) ToDTO() *action.DTO {
+func (a *StoreScreenshot) ToDTO() *action.DTO {
 	return &action.DTO{
-		ProtoDTO: &action.ProtoDTO{
-			Output: []string{"filename"},
-		},
+		ProtoDTO: &action.ProtoDTO{},
 	}
 }

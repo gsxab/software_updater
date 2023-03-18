@@ -15,10 +15,15 @@
 package web
 
 import (
+	"context"
+	"encoding/base64"
 	"github.com/tebeka/selenium"
 	"github.com/tebeka/selenium/chrome"
 	"log"
+	"os"
+	"path"
 	"software_updater/core/config"
+	"software_updater/core/logs"
 	"time"
 )
 
@@ -68,4 +73,40 @@ func StopSelenium() error {
 	}
 	err = service.Stop()
 	return err
+}
+
+func TakeScreenshot(ctx context.Context, driver selenium.WebDriver, name string) (string, error) {
+	filename := base64.URLEncoding.EncodeToString([]byte(name)) + "@" + time.Now().Format("2006-01-02") + ".png"
+
+	width, err := driver.ExecuteScript("return document.body.scrollWidth;", nil)
+	if err != nil {
+		logs.Error(ctx, "selenium screenshot failed", err)
+		return "", err
+	}
+
+	height, err := driver.ExecuteScript("return document.body.scrollHeight;", nil)
+	if err != nil {
+		logs.Error(ctx, "selenium screenshot failed", err)
+		return "", err
+	}
+
+	err = driver.ResizeWindow("", int(width.(float64)), int(height.(float64)))
+	if err != nil {
+		logs.Error(ctx, "selenium screenshot failed", err)
+		return "", err
+	}
+
+	bytes, err := driver.Screenshot()
+	if err != nil {
+		logs.Error(ctx, "selenium screenshot failed", err)
+		return "", err
+	}
+
+	err = os.WriteFile(path.Join(config.Current().Files.ScreenshotDir, filename), bytes, os.FileMode(0o644))
+	if err != nil {
+		logs.Error(ctx, "write file failed", err)
+		return "", err
+	}
+
+	return filename, nil
 }
