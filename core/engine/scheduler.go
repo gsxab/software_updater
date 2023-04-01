@@ -29,7 +29,7 @@ func NewScheduler() Scheduler {
 }
 
 const day time.Duration = time.Hour * 24
-const defaultSchedule time.Duration = day * 7
+const defaultSchedule time.Duration = day
 
 type DefaultScheduler struct {
 }
@@ -53,15 +53,16 @@ func (s *DefaultScheduler) ScheduleForNoUpdate(_ *po.CurrentVersion, oldV *po.Ve
 	thisUpdate := time.Now()
 
 	daysToUpdate := thisUpdate.Sub(lastUpdate).Hours() / 24
-	var daysToSchedule time.Duration
-	if daysToUpdate < 10 {
-		daysToSchedule = 7
-	} else if daysToUpdate > 30 {
-		daysToSchedule = 23
+	var daysToSchedule int
+	if daysToUpdate > 30 {
+		daysToSchedule = 14
 	} else {
-		daysToSchedule = time.Duration(int(3 * daysToUpdate / 4))
+		daysToSchedule = int(daysToUpdate / 2)
 	}
-	nextUpdateTime := thisUpdate.Add(day * daysToSchedule)
+	if daysToSchedule < 1 {
+		daysToSchedule = 1
+	}
+	nextUpdateTime := thisUpdate.Add(day * time.Duration(daysToSchedule))
 
 	nextUpdateDate := time.Date(nextUpdateTime.Year(), nextUpdateTime.Month(), nextUpdateTime.Day(), 0, 0, 0, 0, time.Local)
 	return nextUpdateDate
@@ -93,15 +94,16 @@ func (s *DefaultScheduler) ScheduleForUpdate(_ *po.CurrentVersion, oldV *po.Vers
 	}
 
 	daysToUpdate := thisUpdate.Sub(lastUpdate).Hours() / 24
-	var daysToSchedule time.Duration
-	if daysToUpdate < 14 {
+	var daysToSchedule int
+	if daysToUpdate > 30 {
 		daysToSchedule = 7
-	} else if daysToUpdate > 45 {
-		daysToSchedule = 23
 	} else {
-		daysToSchedule = time.Duration(int(daysToUpdate / 2))
+		daysToSchedule = int(daysToUpdate / 4)
 	}
-	nextUpdateTime := thisUpdate.Add(day * daysToSchedule)
+	if daysToSchedule < 1 {
+		daysToSchedule = 1
+	}
+	nextUpdateTime := thisUpdate.Add(day * time.Duration(daysToSchedule))
 
 	nextUpdateDate := time.Date(nextUpdateTime.Year(), nextUpdateTime.Month(), nextUpdateTime.Day(), 0, 0, 0, 0, time.Local)
 	return nextUpdateDate

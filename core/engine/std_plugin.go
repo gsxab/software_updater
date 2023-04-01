@@ -17,7 +17,6 @@ package engine
 import (
 	"context"
 	"software_updater/core/action"
-	"software_updater/core/action/base"
 	"software_updater/core/action/std"
 	"software_updater/core/config"
 	"software_updater/core/hook"
@@ -62,12 +61,16 @@ func DefaultPlugins(config *config.EngineConfig) []Plugin {
 				//&action.CheckDate{},
 				// string mutator
 				&std.RegexpExtract{},
-				&base.Format{},
+				&std.Format{},
 				&std.ReduceFormat{},
 				&std.ReduceJoin{},
 				&std.AppendFormat{},
+				// url escaper
 				&std.URLUnescape{},
 				&std.URLEscape{},
+				// json handler
+				&std.GoJQ{},
+				//&std.JsonPath{},
 				// encoding
 				//&action.Encoding{},
 				// base encoder (RFC3548/4648)
@@ -89,11 +92,15 @@ func DefaultPlugins(config *config.EngineConfig) []Plugin {
 				// curl a url
 				&std.CURL{},
 				&std.CURLSave{},
+				// save string
+				//&std.SaveString{},
+				//&std.SavePage{},
 				// store infos
 				&std.StoreURL{},
 				&std.StoreVersion{},
 				&std.StoreDate{},
 				&std.StoreDigest{},
+				&std.StoreScreenshot{},
 				//&action.StoreStr{},
 			},
 		},

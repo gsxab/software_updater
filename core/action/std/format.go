@@ -12,20 +12,21 @@
  * You should have received a copy of the GNU General Public License along with Software Update Watcher. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package base
+package std
 
 import (
 	"context"
 	"fmt"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
+	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"sync"
 )
 
 type Format struct {
-	StringMutator
-	DefaultFactory[Format, *Format]
+	base.StringMutator
+	base.DefaultFactory[Format, *Format]
 	Format string `json:"format"`
 }
 
