@@ -19,19 +19,19 @@ import (
 	"software_updater/core/action"
 	"software_updater/core/config"
 	"software_updater/core/db/po"
+	"software_updater/core/flow"
 	"software_updater/core/hook"
-	"software_updater/core/job"
 )
 
 type Engine interface {
 	InitEngine(context.Context, *config.EngineConfig) error
-	DestroyEngine(context.Context, *config.EngineConfig)
+	DestroyEngine(context.Context)
 
 	RegisterAction(factory action.Factory) error
 	RegisterHook(registerItem *hook.RegisterInfo) error
 	Run(ctx context.Context, homepage *po.Homepage) (TaskID, error)
-	CheckState(ctx context.Context, id TaskID) (bool, job.State, error)
-	Load(ctx context.Context, homepage *po.Homepage, useCache bool) (*job.Flow, error)
+	CheckState(ctx context.Context, id TaskID) (bool, flow.State, error)
+	Load(ctx context.Context, homepage *po.Homepage, useCache bool) (*flow.Flow, error)
 	RunAll(ctx context.Context) error
 	ActionHierarchy(ctx context.Context) (*action.HierarchyDTO, error)
 
@@ -63,8 +63,8 @@ func InitEngine(config *config.EngineConfig, extraPlugins ...Plugin) (Engine, er
 	return engine, nil
 }
 
-func DestroyEngine(ctx context.Context, config *config.EngineConfig) {
-	engine.DestroyEngine(ctx, config)
+func DestroyEngine(ctx context.Context) {
+	engine.DestroyEngine(ctx)
 }
 
 func Instance() Engine {

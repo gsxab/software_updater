@@ -54,7 +54,7 @@ func main() {
 	case "", "web":
 		logs.InfoM(context.Background(), "web ui selected")
 		err = webui.InitAndRun(context.Background(), conf.Extra["web_ui_setting"])
-		defer engine.DestroyEngine(context.Background(), conf.Engine)
+		defer engine.DestroyEngine(context.Background())
 		if err != nil {
 			log.Panic(err)
 		}

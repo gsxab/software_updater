@@ -12,34 +12,16 @@
  * You should have received a copy of the GNU General Public License along with Software Update Watcher. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package job
+package flow
 
-import (
-	"github.com/tebeka/selenium"
-	"golang.org/x/net/context"
-	"software_updater/core/action"
-	"software_updater/core/db/po"
-	"software_updater/core/util/error_util"
-	"sync"
-)
-
-type LoggedJob struct {
-	DefaultJob
-	info *DebugInfo
+type Branch struct {
+	Steps []Step
+	Next  []*Branch // reserved for branching
 }
 
-func (j *LoggedJob) RunAction(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version, errs error_util.Collector, wg *sync.WaitGroup) (*action.Args, bool, bool, error) {
-	output, stop, cancel, err := j.DefaultJob.RunAction(ctx, driver, args, v, errs, wg)
-	j.info = &DebugInfo{
-		Err:    err,
-		Input:  args,
-		Output: output,
-	}
-	return output, stop, cancel, err
-}
-
-func (j *LoggedJob) ToDTO() *DTO {
-	dto := j.DefaultJob.ToDTO()
-	dto.DebugInfo = j.info
-	return dto
+type Flow struct {
+	Root    *Branch
+	Name    string
+	Version string
+	Desc    string
 }

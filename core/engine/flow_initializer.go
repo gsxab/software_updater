@@ -19,8 +19,8 @@ import (
 	"encoding/json"
 	"software_updater/core/action"
 	"software_updater/core/config"
+	"software_updater/core/flow"
 	"software_updater/core/hook"
-	"software_updater/core/job"
 	"software_updater/core/util/error_util"
 	"strconv"
 	"sync"
@@ -33,65 +33,65 @@ func NewFlowInitializer() *FlowInitializer {
 	return &FlowInitializer{}
 }
 
-func (t *FlowInitializer) Resolve(ctx context.Context, actionStr string, actionManager *ActionManager, config *config.EngineConfig) (*job.Flow, error) {
+func (t *FlowInitializer) Resolve(ctx context.Context, actionStr string, actionManager *ActionManager) (*flow.Flow, error) {
 	var storedFlow StoredFlow
 	errs := error_util.NewCollector()
 	errs.Collect(json.Unmarshal([]byte(actionStr), &storedFlow))
 
-	flow := &job.Flow{
-		Root: t.resolveBranch(ctx, storedFlow.Root, actionManager, config, errs, ""),
+	fl := &flow.Flow{
+		Root: t.resolveBranch(ctx, storedFlow.Root, actionManager, errs, ""),
 	}
 
-	return flow, errs.ToError()
+	return fl, errs.ToError()
 }
 
 func (t *FlowInitializer) resolveBranch(ctx context.Context, storedBranch StoredBranch, actionManager *ActionManager,
-	config *config.EngineConfig, errs *error_util.ErrorCollector, prefix string) *job.Branch {
-	jobs := make([]job.Job, 0, len(storedBranch.Actions))
+	errs *error_util.ErrorCollector, prefix string) *flow.Branch {
+	steps := make([]flow.Step, 0, len(storedBranch.Actions))
 	for i, storedAction := range storedBranch.Actions {
 		a, hooks, err := actionManager.Action(ctx, &storedAction)
 		errs.Collect(err)
 		if a == nil {
 			continue
 		}
-		j := t.NewJob(ctx, config, a, hooks)
-		j.SetName(a.Path().Name() + prefix + "-" + strconv.Itoa(i))
-		jobs = append(jobs, j)
+		step := t.NewStep(ctx, a, hooks)
+		step.SetName(a.Path().Name() + prefix + "-" + strconv.Itoa(i))
+		steps = append(steps, step)
 	}
 
-	next := make([]*job.Branch, 0, len(storedBranch.Next))
+	next := make([]*flow.Branch, 0, len(storedBranch.Next))
 	for i, child := range storedBranch.Next {
-		branch := t.resolveBranch(ctx, child, actionManager, config, errs, prefix+"-b"+strconv.Itoa(i))
+		branch := t.resolveBranch(ctx, child, actionManager, errs, prefix+"-b"+strconv.Itoa(i))
 		next = append(next, branch)
 	}
 
-	return &job.Branch{
-		Jobs: jobs,
-		Next: next,
+	return &flow.Branch{
+		Steps: steps,
+		Next:  next,
 	}
 }
 
-func (t *FlowInitializer) NewJob(_ context.Context, config *config.EngineConfig, action action.Action, hooks []*hook.ActionHooks) job.Job {
-	var item job.Job
-	if config.DebugLog {
-		item = &job.LoggedJob{}
+func (t *FlowInitializer) NewStep(_ context.Context, action action.Action, hooks []*hook.ActionHooks) flow.Step {
+	var item flow.Step
+	if config.Current().Engine.DebugLog {
+		item = &flow.LoggedStep{}
 	} else {
-		item = &job.DefaultJob{}
+		item = &flow.DefaultStep{}
 	}
 	item.SetAction(action, hooks)
 	return item
 }
 
-func (t *FlowInitializer) StaticCheckFlow(flow *job.Flow) error {
+func (t *FlowInitializer) StaticCheckFlow(flow *flow.Flow) error {
 	var elmArgN, strArgN int
 	errs := error_util.NewCollector()
 	t.staticCheckBranch(flow.Root, elmArgN, strArgN, errs)
 	return errs.ToError()
 }
 
-func (t *FlowInitializer) staticCheckBranch(thread *job.Branch, elmArgN int, strArgN int, errs *error_util.ErrorCollector) {
+func (t *FlowInitializer) staticCheckBranch(thread *flow.Branch, elmArgN int, strArgN int, errs *error_util.ErrorCollector) {
 	var err error
-	for _, j := range thread.Jobs {
+	for _, j := range thread.Steps {
 		elmArgN, err = action.StaticCheckInput(j.Action().InElmNum(), j.Action().OutElmNum(), elmArgN, j.Name())
 		errs.Collect(err)
 		strArgN, err = action.StaticCheckInput(j.Action().InStrNum(), j.Action().OutStrNum(), strArgN, j.Name())
@@ -103,7 +103,7 @@ func (t *FlowInitializer) staticCheckBranch(thread *job.Branch, elmArgN int, str
 	}
 }
 
-func (t *FlowInitializer) InitFlow(ctx context.Context, flow *job.Flow) error {
+func (t *FlowInitializer) InitFlow(ctx context.Context, fl *flow.Flow) error {
 	wg := sync.WaitGroup{}
 	errChan := make(chan error, 16)
 	overChan := make(chan struct{})
@@ -118,7 +118,7 @@ func (t *FlowInitializer) InitFlow(ctx context.Context, flow *job.Flow) error {
 		close(overChan)
 	}()
 
-	t.initBranch(ctx, flow.Root, &error_util.ChannelCollector{Channel: errChan}, &wg)
+	t.initBranch(ctx, fl.Root, &error_util.ChannelCollector{Channel: errChan}, &wg)
 
 	wg.Wait()
 	close(errChan)
@@ -126,9 +126,9 @@ func (t *FlowInitializer) InitFlow(ctx context.Context, flow *job.Flow) error {
 	return errs.ToError()
 }
 
-func (t *FlowInitializer) initBranch(ctx context.Context, branch *job.Branch, errs error_util.Collector, wg *sync.WaitGroup) {
-	for _, j := range branch.Jobs {
-		j.InitAction(ctx, errs, wg)
+func (t *FlowInitializer) initBranch(ctx context.Context, branch *flow.Branch, errs error_util.Collector, wg *sync.WaitGroup) {
+	for _, step := range branch.Steps {
+		step.InitAction(ctx, errs, wg)
 	}
 
 	for _, child := range branch.Next {

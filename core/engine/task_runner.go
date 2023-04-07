@@ -17,12 +17,12 @@ package engine
 import (
 	"context"
 	cache "github.com/gsxab/go-generic_lru"
-	cache2 "github.com/gsxab/go-generic_lru/lru_with_rw_lock"
+	cache_impl "github.com/gsxab/go-generic_lru/lru_with_rw_lock"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
 	"software_updater/core/config"
 	"software_updater/core/db/po"
-	"software_updater/core/job"
+	"software_updater/core/flow"
 	"software_updater/core/logs"
 	"software_updater/core/tools/web"
 	"software_updater/core/util/error_util"
@@ -36,8 +36,8 @@ type TaskID = int64
 type Task struct {
 	ID    TaskID
 	Name  string
-	State job.State
-	Flow  *job.Flow
+	State flow.State
+	Flow  *flow.Flow
 	CV    *po.CurrentVersion
 	HpURL string
 	// runtime
@@ -60,8 +60,8 @@ func NewTaskRunner(ctx context.Context, start bool, interval int, update func(co
 	result := &TaskRunner{
 		nextId:  0,
 		running: &sync.Mutex{},
-		pending: cache2.New[TaskID, *Task](0),
-		done:    cache2.New[TaskID, *Task](config.Current().Engine.DoneCache),
+		pending: cache_impl.New[TaskID, *Task](0),
+		done:    cache_impl.New[TaskID, *Task](config.Current().Engine.DoneCache),
 		start:   sync.Once{},
 		dur:     time.Duration(interval) * time.Second,
 		update:  update,
@@ -73,20 +73,20 @@ func NewTaskRunner(ctx context.Context, start bool, interval int, update func(co
 	return result
 }
 
-func (r *TaskRunner) EnqueueJob(ctx context.Context, flow *job.Flow, name string, cv *po.CurrentVersion, homepageURL string) (TaskID, error) {
+func (r *TaskRunner) EnqueueJob(ctx context.Context, fl *flow.Flow, name string, cv *po.CurrentVersion, homepageURL string) (TaskID, error) {
 	id := atomic.AddInt64(&r.nextId, 1)
 	task := &Task{
 		ID:    id,
 		Name:  name,
-		State: job.Init,
-		Flow:  flow,
+		State: flow.Init,
+		Flow:  fl,
 		CV:    cv,
 		HpURL: homepageURL,
 	}
-	logs.InfoM(ctx, "enqueueing job", "id", id, "name", name)
+	logs.InfoM(ctx, "enqueueing flow", "id", id, "name", name)
 	r.pending.Add(id, task)
-	logs.InfoM(ctx, "enqueued job", "id", id, "name", name)
-	task.State = job.Pending
+	logs.InfoM(ctx, "enqueued flow", "id", id, "name", name)
+	task.State = flow.Pending
 	return id, nil
 }
 
@@ -94,7 +94,7 @@ func (r *TaskRunner) Stop(ctx context.Context) {
 	r.cancel()
 }
 
-func (r *TaskRunner) GetTaskState(id TaskID) (bool, job.State, error) {
+func (r *TaskRunner) GetTaskState(id TaskID) (bool, flow.State, error) {
 	var task *Task
 	var ok bool
 
@@ -151,7 +151,7 @@ func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.We
 	}
 
 	ctx, task.Cancel = context.WithCancel(ctx)
-	task.State = job.Processing
+	task.State = flow.Processing
 
 	// there may be multiple goroutines for vars, no write since here
 	update := r.runBranch(ctx, task.Flow.Root, driver, args, v, &error_util.ChannelCollector{Channel: errChan}, task)
@@ -161,14 +161,14 @@ func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.We
 	<-errStopChan
 
 	err := errs.ToError()
-	if task.State == job.Processing { // may be set to cancel
+	if task.State == flow.Processing { // may be set to cancel
 		if err != nil {
-			task.State = job.Failure
+			task.State = flow.Failure
 		} else {
-			task.State = job.Success
+			task.State = flow.Success
 		}
 	}
-	if task.State != job.Success {
+	if task.State != flow.Success {
 		return nil, err
 	}
 
@@ -190,16 +190,16 @@ func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.We
 	return v, nil
 }
 
-func (r *TaskRunner) runBranch(ctx context.Context, branch *job.Branch, driver selenium.WebDriver, args *action.Args,
+func (r *TaskRunner) runBranch(ctx context.Context, branch *flow.Branch, driver selenium.WebDriver, args *action.Args,
 	v *po.Version, errs error_util.Collector, task *Task) (update bool) {
-	for _, j := range branch.Jobs {
+	for _, j := range branch.Steps {
 		if args == nil {
 			args = &action.Args{}
 		}
 		output, finishBranch, stopFlow, _ := j.RunAction(ctx, driver, args, v, errs, task.Wg)
 		if stopFlow {
 			task.Cancel()
-			task.State = job.Cancelled
+			task.State = flow.Cancelled
 			return
 		}
 		if finishBranch {
@@ -215,7 +215,7 @@ func (r *TaskRunner) runBranch(ctx context.Context, branch *job.Branch, driver s
 	}
 	task.Wg.Add(childCnt - 1)
 	for i := 1; i < childCnt; i++ {
-		go func(branch2 *job.Branch) {
+		go func(branch2 *flow.Branch) {
 			if r.runBranch(ctx, branch2, driver, args, v, errs, task) {
 				update = true
 			}
@@ -263,7 +263,7 @@ func (r *TaskRunner) StartRunningRoutine(ctx context.Context) {
 							r.update(ctx, task.CV, version)
 						}
 						if err != nil {
-							task.State = job.Failure
+							task.State = flow.Failure
 						}
 
 						// lock both, order: d -> p
@@ -272,8 +272,8 @@ func (r *TaskRunner) StartRunningRoutine(ctx context.Context) {
 								p.Remove(task.ID)
 
 								d.Add(task.ID, task)
-								if task.State == job.Processing {
-									task.State = job.Success
+								if task.State == flow.Processing {
+									task.State = flow.Success
 								}
 							})
 						})

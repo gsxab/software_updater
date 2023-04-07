@@ -12,7 +12,7 @@
  * You should have received a copy of the GNU General Public License along with Software Update Watcher. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package job
+package flow
 
 import (
 	"fmt"
@@ -27,7 +27,7 @@ import (
 	"time"
 )
 
-type DefaultJob struct {
+type DefaultStep struct {
 	name      string
 	action    action.Action
 	hooks     []*hook.ActionHooks
@@ -37,16 +37,16 @@ type DefaultJob struct {
 	stateDesc string
 }
 
-func (j *DefaultJob) SetAction(action action.Action, hooks []*hook.ActionHooks) {
+func (j *DefaultStep) SetAction(action action.Action, hooks []*hook.ActionHooks) {
 	j.action = action
 	j.hooks = hooks
 }
 
-func (j *DefaultJob) Action() action.Action {
+func (j *DefaultStep) Action() action.Action {
 	return j.action
 }
 
-func (j *DefaultJob) InitAction(ctx context.Context, errs error_util.Collector, wg *sync.WaitGroup) {
+func (j *DefaultStep) InitAction(ctx context.Context, errs error_util.Collector, wg *sync.WaitGroup) {
 	j.state = Init
 
 	select {
@@ -90,7 +90,7 @@ func (j *DefaultJob) InitAction(ctx context.Context, errs error_util.Collector, 
 	j.state = Ready
 }
 
-func (j *DefaultJob) RunAction(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version, errs error_util.Collector, wg *sync.WaitGroup) (output *action.Args, finishBranch bool, stopFlow bool, err error) {
+func (j *DefaultStep) RunAction(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version, errs error_util.Collector, wg *sync.WaitGroup) (output *action.Args, finishBranch bool, stopFlow bool, err error) {
 	j.state = Processing
 
 	select {
@@ -138,7 +138,7 @@ func (j *DefaultJob) RunAction(ctx context.Context, driver selenium.WebDriver, a
 	return
 }
 
-func (j *DefaultJob) run(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version,
+func (j *DefaultStep) run(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version,
 	errs error_util.Collector, wg *sync.WaitGroup) (output *action.Args, result action.Result, err error) {
 	defer func() {
 		if msg := recover(); msg != nil {
@@ -178,29 +178,29 @@ func (j *DefaultJob) run(ctx context.Context, driver selenium.WebDriver, args *a
 	return
 }
 
-func (j *DefaultJob) State() State {
+func (j *DefaultStep) State() State {
 	return j.state
 }
 
-func (j *DefaultJob) SetState(state State) {
+func (j *DefaultStep) SetState(state State) {
 	j.state = state
 }
 
-func (j *DefaultJob) SetStateDesc(s string) {
+func (j *DefaultStep) SetStateDesc(s string) {
 	j.stateDesc = s
 }
 
-func (j *DefaultJob) Name() string {
+func (j *DefaultStep) Name() string {
 	return j.name
 }
 
-func (j *DefaultJob) SetName(name string) {
+func (j *DefaultStep) SetName(name string) {
 	j.name = name
 }
 
-func (j *DefaultJob) ToDTO() *DTO {
-	dto := &DTO{
-		JobName:   j.name,
+func (j *DefaultStep) ToDTO() *StepDTO {
+	dto := &StepDTO{
+		StepName:  j.name,
 		State:     j.state.Int(),
 		StateDesc: j.stateDesc,
 	}

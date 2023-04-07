@@ -19,7 +19,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"html/template"
 	"net/http"
-	"software_updater/core/job"
+	"software_updater/core/flow"
 	"software_updater/core/logs"
 	"software_updater/core/util"
 	"software_updater/ui/common"
@@ -55,11 +55,11 @@ func GetFlow(ctx *gin.Context) {
 const ActionNameI18NPrefix = "action_name."
 const ActionHelpI18NPrefix = "action_help."
 
-func addFlowI18NInfo(ctx *gin.Context, l *ginI18n.UserLocalize, data *job.BranchDTO) {
-	for _, job := range data.Jobs {
-		actionKey := ActionNameI18NPrefix + job.ActionDTO.Name
-		job.ActionDTO.I18NName = l.GetMsg(actionKey)
-		actionHelpKey := ActionHelpI18NPrefix + job.ActionDTO.Name
+func addFlowI18NInfo(ctx *gin.Context, l *ginI18n.UserLocalize, data *flow.BranchDTO) {
+	for _, step := range data.Steps {
+		actionKey := ActionNameI18NPrefix + step.ActionDTO.Name
+		step.ActionDTO.I18NName = l.GetMsg(actionKey)
+		actionHelpKey := ActionHelpI18NPrefix + step.ActionDTO.Name
 		actionHelpValue := l.GetMsg(actionHelpKey)
 		if actionHelpValue != actionHelpKey {
 			tmpl, err := template.New(actionHelpKey).Parse(actionHelpValue)
@@ -68,12 +68,12 @@ func addFlowI18NInfo(ctx *gin.Context, l *ginI18n.UserLocalize, data *job.Branch
 				continue
 			}
 			sb := &strings.Builder{}
-			err = tmpl.Execute(sb, job.ActionDTO.Values)
+			err = tmpl.Execute(sb, step.ActionDTO.Values)
 			if err != nil {
-				logs.Error(ctx, "template invalid", err, "key", actionHelpKey, "template", actionHelpValue, "data", job.ActionDTO.Values)
+				logs.Error(ctx, "template invalid", err, "key", actionHelpKey, "template", actionHelpValue, "data", step.ActionDTO.Values)
 				continue
 			}
-			job.ActionDTO.I18NHelp = sb.String()
+			step.ActionDTO.I18NHelp = sb.String()
 		}
 	}
 

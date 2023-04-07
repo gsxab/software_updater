@@ -17,14 +17,13 @@ package engine
 import (
 	"context"
 	"fmt"
-	cache "github.com/golang/groupcache/lru"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
 	"software_updater/core/config"
 	"software_updater/core/db/dao"
 	"software_updater/core/db/po"
+	"software_updater/core/flow"
 	"software_updater/core/hook"
-	"software_updater/core/job"
 	"software_updater/core/logs"
 	"software_updater/core/tools/web"
 	"software_updater/core/util"
@@ -33,19 +32,17 @@ import (
 )
 
 type DefaultEngine struct {
-	actionManager   *ActionManager
-	flowInitializer *FlowInitializer
-	taskRunner      *TaskRunner
-	scheduler       Scheduler
-	activeFlows     *cache.Cache // string:*job.Flow
-	config          *config.EngineConfig
-	driver          selenium.WebDriver
+	actionManager *ActionManager
+	flowManager   *FlowManager
+	taskRunner    *TaskRunner
+	scheduler     Scheduler
+	config        *config.EngineConfig
+	driver        selenium.WebDriver
 }
 
 func (e *DefaultEngine) InitEngine(ctx context.Context, engineConfig *config.EngineConfig) error {
-	e.activeFlows = cache.New(16)
 	e.actionManager = NewActionManager()
-	e.flowInitializer = NewFlowInitializer()
+	e.flowManager = NewFlowManager()
 	e.taskRunner = NewTaskRunner(ctx, true, engineConfig.RunnerCheck, func(ctx context.Context, cv *po.CurrentVersion, v *po.Version) {
 		_ = e.updateCurrentVersion(ctx, v, cv)
 	})
@@ -55,7 +52,7 @@ func (e *DefaultEngine) InitEngine(ctx context.Context, engineConfig *config.Eng
 	return nil
 }
 
-func (e *DefaultEngine) DestroyEngine(ctx context.Context, engineConfig *config.EngineConfig) {
+func (e *DefaultEngine) DestroyEngine(ctx context.Context) {
 	e.taskRunner.Stop(ctx)
 }
 
@@ -68,31 +65,17 @@ func (e *DefaultEngine) RegisterHook(registerItem *hook.RegisterInfo) error {
 	return e.actionManager.RegisterHook(registerItem)
 }
 
-func (e *DefaultEngine) Load(ctx context.Context, homepage *po.Homepage, useCache bool) (*job.Flow, error) {
-	if useCache {
-		if flow, ok := e.activeFlows.Get(homepage.Name); ok {
-			return flow.(*job.Flow), nil
-		}
-	}
-	flow, err := e.flowInitializer.Resolve(ctx, homepage.Actions, e.actionManager, e.config)
-	if err != nil {
-		return nil, err
-	}
-	err = e.flowInitializer.InitFlow(ctx, flow)
-	if err != nil {
-		return nil, err
-	}
-	e.activeFlows.Add(homepage.Name, flow)
-	return flow, nil
+func (e *DefaultEngine) Load(ctx context.Context, homepage *po.Homepage, useCache bool) (*flow.Flow, error) {
+	return e.flowManager.Load(ctx, homepage.Name, homepage.Actions, e.actionManager, useCache)
 }
 
 func (e *DefaultEngine) Run(ctx context.Context, hp *po.Homepage) (TaskID, error) {
-	flow, err := e.Load(ctx, hp, true)
+	fl, err := e.Load(ctx, hp, true)
 	if err != nil {
 		return 0, err
 	}
 
-	id, err := e.taskRunner.EnqueueJob(ctx, flow, hp.Name, hp.Current, hp.HomepageURL)
+	id, err := e.taskRunner.EnqueueJob(ctx, fl, hp.Name, hp.Current, hp.HomepageURL)
 	if err != nil {
 		return 0, err
 	}
@@ -100,7 +83,7 @@ func (e *DefaultEngine) Run(ctx context.Context, hp *po.Homepage) (TaskID, error
 	return id, nil
 }
 
-func (e *DefaultEngine) CheckState(_ context.Context, id TaskID) (bool, job.State, error) {
+func (e *DefaultEngine) CheckState(_ context.Context, id TaskID) (bool, flow.State, error) {
 	return e.taskRunner.GetTaskState(id)
 }
 

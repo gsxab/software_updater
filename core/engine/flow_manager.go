@@ -12,34 +12,41 @@
  * You should have received a copy of the GNU General Public License along with Software Update Watcher. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package common
+package engine
 
 import (
 	"context"
-	"software_updater/core/db/dao"
-	"software_updater/core/db/po"
-	"software_updater/core/engine"
+	cache "github.com/gsxab/go-generic_lru"
+	cache_impl "github.com/gsxab/go-generic_lru/lru_with_rw_lock"
 	"software_updater/core/flow"
-	"software_updater/core/logs"
-	"software_updater/ui/dto"
 )
 
-func GetFlowByName(ctx context.Context, name string, reload bool) (*dto.FlowDTO, error) {
-	hpDAO := dao.Homepage
-	hp, err := hpDAO.WithContext(ctx).Where(hpDAO.Name.Eq(name)).Take()
-	if err != nil {
-		logs.Error(ctx, "homepage query failed", err, "name", name)
-		return nil, err
-	}
-	data, err := GetFlow(ctx, hp, reload)
-	return data, err
+type FlowManager struct {
+	activeFlows     cache.Cache[string, *flow.Flow]
+	flowInitializer *FlowInitializer
 }
 
-func GetFlow(ctx context.Context, hp *po.Homepage, reload bool) (*dto.FlowDTO, error) {
-	fl, err := engine.Instance().Load(ctx, hp, !reload)
+func NewFlowManager() *FlowManager {
+	fm := &FlowManager{}
+	fm.activeFlows = cache_impl.New[string, *flow.Flow](16)
+	fm.flowInitializer = NewFlowInitializer()
+	return fm
+}
+
+func (m *FlowManager) Load(ctx context.Context, name string, val string, actionManager *ActionManager, useCache bool) (*flow.Flow, error) {
+	if useCache {
+		if fl, ok := m.activeFlows.Get(name); ok {
+			return fl, nil
+		}
+	}
+	fl, err := m.flowInitializer.Resolve(ctx, val, actionManager)
 	if err != nil {
 		return nil, err
 	}
-	data := flow.ToFlowDTO(fl)
-	return data, nil
+	err = m.flowInitializer.InitFlow(ctx, fl)
+	if err != nil {
+		return nil, err
+	}
+	m.activeFlows.Add(fl.Name, fl)
+	return fl, nil
 }

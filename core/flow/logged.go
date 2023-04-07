@@ -12,16 +12,34 @@
  * You should have received a copy of the GNU General Public License along with Software Update Watcher. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package dto
+package flow
 
 import (
+	"github.com/tebeka/selenium"
+	"golang.org/x/net/context"
 	"software_updater/core/action"
-	"software_updater/core/flow"
+	"software_updater/core/db/po"
+	"software_updater/core/util/error_util"
+	"sync"
 )
 
-type ActionDTO = action.DTO
-type ActionProtoDTO = action.ProtoDTO
-type ActionHierarchyDTO = action.HierarchyDTO
-type StepDTO = flow.StepDTO
-type FlowDTO = flow.DTO
-type TaskDTO = flow.TaskDTO
+type LoggedStep struct {
+	DefaultStep
+	info *DebugInfo
+}
+
+func (j *LoggedStep) RunAction(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version, errs error_util.Collector, wg *sync.WaitGroup) (*action.Args, bool, bool, error) {
+	output, stop, cancel, err := j.DefaultStep.RunAction(ctx, driver, args, v, errs, wg)
+	j.info = &DebugInfo{
+		Err:    err,
+		Input:  args,
+		Output: output,
+	}
+	return output, stop, cancel, err
+}
+
+func (j *LoggedStep) ToDTO() *StepDTO {
+	dto := j.DefaultStep.ToDTO()
+	dto.DebugInfo = j.info
+	return dto
+}
