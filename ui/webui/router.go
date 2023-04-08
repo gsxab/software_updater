@@ -51,6 +51,12 @@ func RegisterRouters(r *gin.Engine) {
 		}
 		ctx.Data(http.StatusOK, mime.TypeByExtension(".html"), data)
 	})
+	r.GET("/favicon.ico", func(ctx *gin.Context) {
+		data, err := DistFiles.ReadFile("dist/favicon.ico")
+		if err != nil {
+		}
+		ctx.Data(http.StatusOK, mime.TypeByExtension(".ico"), data)
+	})
 
 	// rpc
 	g := r.Group("/jsonrpc/v1", midware.CheckRPCSecret(config2.WebUIConfig.Secret))

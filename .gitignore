@@ -2,3 +2,5 @@
 /conf.yaml
 /*.exe
 /*.db
+/plugin/
+!/plugin/example_plugin/

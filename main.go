@@ -44,7 +44,7 @@ func main() {
 		_ = web.StopSelenium()
 	}()
 
-	e, err := engine.InitEngine(conf.Engine)
+	e, err := engine.InitEngine(conf.Engine, customizedPlugins()...)
 	if err != nil {
 		log.Panic(err)
 	}
