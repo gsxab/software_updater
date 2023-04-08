@@ -50,6 +50,7 @@ type TaskRunner struct {
 	running *sync.Mutex                // locked if any task is running
 	pending cache.Cache[TaskID, *Task] // with lock
 	done    cache.Cache[TaskID, *Task] // with lock. less used than p so always lock in d -> p order.
+	nameMap map[string]TaskID
 	start   sync.Once
 	dur     time.Duration
 	update  func(ctx context.Context, cv *po.CurrentVersion, v *po.Version)
@@ -57,11 +58,15 @@ type TaskRunner struct {
 }
 
 func NewTaskRunner(ctx context.Context, start bool, interval int, update func(context.Context, *po.CurrentVersion, *po.Version)) *TaskRunner {
+	nameMap := make(map[string]TaskID)
 	result := &TaskRunner{
 		nextId:  0,
 		running: &sync.Mutex{},
 		pending: cache_impl.New[TaskID, *Task](0),
-		done:    cache_impl.New[TaskID, *Task](config.Current().Engine.DoneCache),
+		done: cache_impl.NewWithEvicted[TaskID, *Task](config.Current().Engine.DoneCache, func(id TaskID, task *Task) {
+			delete(nameMap, task.Name)
+		}),
+		nameMap: nameMap,
 		start:   sync.Once{},
 		dur:     time.Duration(interval) * time.Second,
 		update:  update,
@@ -74,6 +79,13 @@ func NewTaskRunner(ctx context.Context, start bool, interval int, update func(co
 }
 
 func (r *TaskRunner) EnqueueJob(ctx context.Context, fl *flow.Flow, name string, cv *po.CurrentVersion, homepageURL string) (TaskID, error) {
+	if taskID, ok := r.nameMap[name]; ok {
+		if _, found := r.pending.Get(taskID); found {
+			logs.ErrorM(ctx, "enqueueing a job duplicated with a pending one")
+			return taskID, nil
+		}
+	}
+
 	id := atomic.AddInt64(&r.nextId, 1)
 	task := &Task{
 		ID:    id,
@@ -87,6 +99,7 @@ func (r *TaskRunner) EnqueueJob(ctx context.Context, fl *flow.Flow, name string,
 	r.pending.Add(id, task)
 	logs.InfoM(ctx, "enqueued flow", "id", id, "name", name)
 	task.State = flow.Pending
+	r.nameMap[name] = id
 	return id, nil
 }
 
@@ -109,6 +122,10 @@ func (r *TaskRunner) GetTaskState(id TaskID) (bool, flow.State, error) {
 	}
 
 	return false, 0, nil
+}
+
+func (r *TaskRunner) GetTaskIDMap() (map[string]TaskID, error) {
+	return r.nameMap, nil
 }
 
 func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.WebDriver, cv *po.CurrentVersion) (*po.Version, error) {
@@ -244,8 +261,8 @@ func (r *TaskRunner) StartRunningRoutine(ctx context.Context) {
 					func() {
 						plan := r.dur
 						defer func() {
-							if err := recover(); err != nil {
-								logs.ErrorM(context.Background(), "recovered failure", "err", err)
+							if msg := recover(); msg != nil {
+								logs.ErrorM(ctx, "recovered failure", "msg", msg)
 							}
 
 							t.Reset(plan)
@@ -255,6 +272,11 @@ func (r *TaskRunner) StartRunningRoutine(ctx context.Context) {
 						if !ok {
 							logs.InfoM(ctx, "no task is found pending now")
 							return
+						}
+						err := web.Driver().Get("about:blank")
+						if err != nil {
+							logs.Warn(ctx, "go to blank page failure", err)
+							err = nil
 						}
 
 						version, err := r.RunTask(ctx, task, web.Driver(), task.CV)

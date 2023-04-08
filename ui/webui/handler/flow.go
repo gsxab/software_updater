@@ -27,13 +27,18 @@ import (
 )
 
 type GetFlowRequest struct {
-	Name   string `json:"name" form:"name" query:"name"`
+	Name   string `uri:"name" json:"name" form:"name" query:"name"`
 	Reload bool   `json:"reload,omitempty" form:"reload" query:"reload"`
 }
 
 func GetFlow(ctx *gin.Context) {
 	req := &GetFlowRequest{}
 	if err := ctx.ShouldBind(req); err != nil {
+		logs.Warn(ctx, "request param resolving failed", err, "req", util.ToJSON(req))
+		ctx.Status(http.StatusBadRequest)
+		return
+	}
+	if err := ctx.ShouldBindUri(req); err != nil {
 		logs.Warn(ctx, "request param resolving failed", err, "req", util.ToJSON(req))
 		ctx.Status(http.StatusBadRequest)
 		return

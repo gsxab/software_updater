@@ -23,48 +23,80 @@ import (
 )
 
 type StartFlowRequest struct {
-	Name string `json:"name" form:"name" query:"name"`
-}
-
-type StartAllFlowsRequest struct {
-	Force bool `json:"force" form:"force" query:"force"`
+	Name  string `uri:"name" form:"name" query:"name"`
+	Force bool   `json:"force,omitempty" form:"force" query:"force"`
 }
 
 type StartFlowData struct {
 	ID int64 `json:"id"`
 }
 
+type StartAllFlowData struct {
+	IDs []int64 `json:"ids"`
+}
+
 func StartFlow(ctx *gin.Context) {
 	req := &StartFlowRequest{}
-	if err := ctx.ShouldBind(req); err != nil {
+	if err := ctx.ShouldBindUri(req); err != nil {
 		logs.Warn(ctx, "request param resolving failed", err, "req", util.ToJSON(req))
 		ctx.Status(http.StatusBadRequest)
 		return
 	}
 
-	id, err := common.StartFlowByName(ctx, req.Name)
+	idMap, err := common.StartFlow(ctx, req.Name, req.Force)
 	if err != nil {
 		ctx.Status(http.StatusInternalServerError)
 		return
 	}
+	if len(idMap) != 1 {
+		ctx.Status(http.StatusInternalServerError)
+		return
+	}
 
-	ctx.JSON(http.StatusOK, &StartFlowData{ID: id})
+	for _, id := range idMap {
+		ctx.JSON(http.StatusCreated, &StartFlowData{ID: id})
+	}
 }
 
 func StartAllFlows(ctx *gin.Context) {
-	req := &StartAllFlowsRequest{}
-	if err := ctx.ShouldBind(req); err != nil {
+	req := &StartFlowRequest{}
+	if err := ctx.ShouldBindUri(req); err != nil {
 		logs.Warn(ctx, "request param resolving failed", err, "req", util.ToJSON(req))
 		ctx.Status(http.StatusBadRequest)
 		return
 	}
+	req.Name = "all"
 
-	err := common.StartAllFlows(ctx)
+	idMap, err := common.StartFlow(ctx, req.Name, req.Force)
 	if err != nil {
-		logs.Error(ctx, "start all flows failed", err, "req", util.ToJSON(req))
+		if req.Name == "all" {
+			ids := make([]int64, 0, len(idMap))
+			for _, id := range idMap {
+				ids = append(ids, id)
+			}
+			ctx.JSON(http.StatusInternalServerError, &StartAllFlowData{IDs: ids})
+			return
+		}
+
 		ctx.Status(http.StatusInternalServerError)
 		return
 	}
 
-	ctx.Status(http.StatusOK)
+	if req.Name == "all" {
+		ids := make([]int64, 0, len(idMap))
+		for _, id := range idMap {
+			ids = append(ids, id)
+		}
+		ctx.JSON(http.StatusCreated, &StartAllFlowData{IDs: ids})
+		return
+	}
+
+	if len(idMap) != 1 {
+		ctx.Status(http.StatusInternalServerError)
+		return
+	}
+
+	for _, id := range idMap {
+		ctx.JSON(http.StatusCreated, &StartFlowData{ID: id})
+	}
 }

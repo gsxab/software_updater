@@ -87,6 +87,10 @@ func (e *DefaultEngine) CheckState(_ context.Context, id TaskID) (bool, flow.Sta
 	return e.taskRunner.GetTaskState(id)
 }
 
+func (e *DefaultEngine) GetTaskIDMap(_ context.Context) (map[string]TaskID, error) {
+	return e.taskRunner.GetTaskIDMap()
+}
+
 func (e *DefaultEngine) NeedCrawl(ctx context.Context) (hps []*po.Homepage, err error) {
 	hpDAO := dao.Homepage
 	cvDAO := dao.CurrentVersion

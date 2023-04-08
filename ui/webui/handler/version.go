@@ -23,13 +23,13 @@ import (
 )
 
 type GetVersionRequest struct {
-	Name    string `json:"name" form:"name" query:"name"`
-	Version string `json:"version" form:"version" query:"version"`
+	Name    string `uri:"name"`
+	Version string `uri:"version"`
 }
 
 func GetVersion(ctx *gin.Context) {
 	req := &GetVersionRequest{}
-	if err := ctx.ShouldBind(req); err != nil {
+	if err := ctx.ShouldBindUri(req); err != nil {
 		logs.Warn(ctx, "request param resolving failed", err, "req", util.ToJSON(req))
 		ctx.Status(http.StatusBadRequest)
 		return

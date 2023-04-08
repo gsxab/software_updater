@@ -25,7 +25,8 @@ import (
 func GetList(ctx context.Context) ([]*dto.ListItemDTO, error) {
 	hpDAO := dao.Homepage
 
-	hps, err := hpDAO.WithContext(ctx).Preload(hpDAO.Current).Preload(hpDAO.Current.Version).Find()
+	hps, err := hpDAO.WithContext(ctx).Preload(hpDAO.Current).Preload(hpDAO.Current.Version).
+		Order(hpDAO.Name).Find()
 	if err != nil {
 		logs.Error(ctx, "list query failed", err)
 		return nil, err

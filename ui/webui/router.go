@@ -54,22 +54,30 @@ func RegisterRouters(r *gin.Engine) {
 
 	// rpc
 	g := r.Group("/jsonrpc/v1", midware.CheckRPCSecret(config2.WebUIConfig.Secret))
+
 	// list
 	g.GET("/list", h.GetList)
+
 	// version
-	g.GET("/version", h.GetVersion)
+	g.GET("/version/:name/:version", h.GetVersion)
+
 	// action
-	g.GET("/action", h.GetActionTree)
+	g.GET("/actions", h.GetActionTree)
+
 	// flow
-	g.GET("/flow", h.GetFlow)
-	//g.GET("/flow/realtime", getRealTimeFlow)
-	//g.GET("/flow/job", getJob)
-	//g.PUT("/flow", putFlow)
-	//g.DELETE("/flow/job", deleteFlow)
-	// flow state
-	g.POST("/flow/start", h.StartFlow)
-	g.POST("/flow/start_all", h.StartAllFlows)
-	//g.POST("/task/cancel", h.CancelTask)
-	//g.POST("/task/cancel_all", h.CancelAllTasks)
-	g.GET("/task/state", h.GetTaskState)
+	g.GET("/flow/:name", h.GetFlow)
+	//g.GET("/flow/:name/edit", h.GetFlowEditForm)
+	//g.POST("/flow/:name", EditFlow)
+	//g.GET("/flow/:name/create", h.GetFlowCreateForm)
+	//g.PUT("/flow/:name", CreateFlow)
+
+	// start task from flow
+	g.POST("/flow/:name/start", h.StartFlow)
+	g.POST("/flow/all/start", h.StartAllFlows)
+
+	// task
+	g.GET("/tasks", h.GetTaskIDMap)
+	//g.POST("/task/:id/cancel", h.CancelTask)
+	//g.POST("/task/all/cancel", h.CancelAllTasks)
+	g.GET("/task/:id", h.GetTask)
 }

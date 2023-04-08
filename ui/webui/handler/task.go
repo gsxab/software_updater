@@ -23,17 +23,17 @@ import (
 )
 
 type GetTaskStateRequest struct {
-	TaskID int64 `json:"id" form:"id" query:"id"`
+	TaskID int64 `uri:"id"`
 }
 
 type GetTaskStateData struct {
-	Exist bool `json:"exist" form:"exist" query:"exist"`
-	State int  `json:"state" form:"state" query:"state"`
+	Exist bool `json:"exist"`
+	State int  `json:"state"`
 }
 
-func GetTaskState(ctx *gin.Context) {
+func GetTask(ctx *gin.Context) {
 	req := &GetTaskStateRequest{}
-	if err := ctx.ShouldBind(req); err != nil {
+	if err := ctx.ShouldBindUri(req); err != nil {
 		logs.Warn(ctx, "request param resolving failed", err, "req", util.ToJSON(req))
 		ctx.Status(http.StatusBadRequest)
 		return
@@ -46,4 +46,24 @@ func GetTaskState(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, &GetTaskStateData{Exist: exist, State: state})
+}
+
+type GetTaskIDMapRequest struct {
+}
+
+func GetTaskIDMap(ctx *gin.Context) {
+	req := &GetTaskIDMapRequest{}
+	if err := ctx.ShouldBindUri(req); err != nil {
+		logs.Warn(ctx, "request param resolving failed", err, "req", util.ToJSON(req))
+		ctx.Status(http.StatusBadRequest)
+		return
+	}
+
+	idMap, err := common.GetTaskIDMap(ctx)
+	if err != nil {
+		ctx.Status(http.StatusInternalServerError)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, idMap)
 }

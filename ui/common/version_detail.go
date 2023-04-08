@@ -41,7 +41,13 @@ func GetVersionDetail(ctx context.Context, name string, optionalPage *string, v 
 
 	vDAO := dao.Version
 
-	version, err := vDAO.WithContext(ctx).Where(vDAO.Name.Eq(name), vDAO.Version.Eq(v)).Take()
+	query := vDAO.WithContext(ctx).Where(vDAO.Name.Eq(name))
+	if v == "latest" {
+		query = query.Order(vDAO.LocalTime.Desc()).Limit(1)
+	} else {
+		query = query.Where(vDAO.Version.Eq(v))
+	}
+	version, err := query.Take()
 	if err != nil {
 		logs.Error(ctx, "version query failed", err, "name", name, "v", v)
 		return nil, err

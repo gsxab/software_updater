@@ -23,3 +23,8 @@ func GetTaskByID(ctx context.Context, taskID int64) (bool, int, error) {
 	exist, state, err := engine.Instance().CheckState(ctx, taskID)
 	return exist, int(state), err
 }
+
+func GetTaskIDMap(ctx context.Context) (map[string]int64, error) {
+	idMap, err := engine.Instance().GetTaskIDMap(ctx)
+	return idMap, err
+}

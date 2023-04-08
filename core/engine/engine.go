@@ -31,6 +31,7 @@ type Engine interface {
 	RegisterHook(registerItem *hook.RegisterInfo) error
 	Run(ctx context.Context, homepage *po.Homepage) (TaskID, error)
 	CheckState(ctx context.Context, id TaskID) (bool, flow.State, error)
+	GetTaskIDMap(ctx context.Context) (map[string]TaskID, error)
 	Load(ctx context.Context, homepage *po.Homepage, useCache bool) (*flow.Flow, error)
 	RunAll(ctx context.Context) error
 	ActionHierarchy(ctx context.Context) (*action.HierarchyDTO, error)

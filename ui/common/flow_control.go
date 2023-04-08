@@ -22,23 +22,29 @@ import (
 	"software_updater/core/logs"
 )
 
-func StartFlowByName(ctx context.Context, name string) (engine.TaskID, error) {
+func StartFlow(ctx context.Context, name string, force bool) (map[string]engine.TaskID, error) {
 	hpDAO := dao.Homepage
-	hp, err := hpDAO.WithContext(ctx).Preload(hpDAO.Current).Preload(hpDAO.Current.Version).Where(hpDAO.Name.Eq(name)).Take()
+	query := hpDAO.WithContext(ctx).Preload(hpDAO.Current).Preload(hpDAO.Current.Version)
+	if name != "all" {
+		query = query.Where(hpDAO.Name.Eq(name))
+	}
+	hps, err := query.Find()
 	if err != nil {
 		logs.Error(ctx, "homepage query failed", err, "name", name)
-		return 0, err
+		return nil, err
 	}
-	data, err := StartFlow(ctx, hp)
-	return data, err
+	data := make(map[string]engine.TaskID)
+	for _, hp := range hps {
+		id, err := startFlow(ctx, hp)
+		if err != nil {
+			return data, err
+		}
+		data[hp.Name] = id
+	}
+	return data, nil
 }
 
-func StartAllFlows(ctx context.Context) error {
-	err := engine.Instance().RunAll(ctx)
-	return err
-}
-
-func StartFlow(ctx context.Context, hp *po.Homepage) (engine.TaskID, error) {
+func startFlow(ctx context.Context, hp *po.Homepage) (engine.TaskID, error) {
 	id, err := engine.Instance().Run(ctx, hp)
 	if err != nil {
 		return 0, err
