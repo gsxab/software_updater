@@ -43,6 +43,9 @@ func (m *FlowManager) Load(ctx context.Context, name string, val string, actionM
 	if err != nil {
 		return nil, err
 	}
+	if len(fl.Name) == 0 {
+		fl.Name = name
+	}
 	err = m.flowInitializer.InitFlow(ctx, fl)
 	if err != nil {
 		return nil, err
