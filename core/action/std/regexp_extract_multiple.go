@@ -26,43 +26,52 @@ import (
 	"sync"
 )
 
-type RegexpExtract struct {
-	base.StringMutator
-	base.DefaultFactory[RegexpExtract, *RegexpExtract]
+type RegexpExtractGroups struct {
+	base.Default
+	base.DefaultFactory[RegexpExtractGroups, *RegexpExtractGroups]
 	Pattern   string `json:"pattern"`
 	FullMatch bool   `json:"full_match"`
 	matcher   *regexp.Regexp
 }
 
-func (a *RegexpExtract) Path() action.Path {
-	return action.Path{"string", "mutator", "regexp_extract"}
+func (a *RegexpExtractGroups) Path() action.Path {
+	return action.Path{"string", "mutator", "regexp_extract_groups"}
 }
 
-func (a *RegexpExtract) Icon() string {
+func (a *RegexpExtractGroups) Icon() string {
 	return "mdi:mdi-regex"
 }
 
-func (a *RegexpExtract) Init(context.Context, *sync.WaitGroup) (err error) {
+func (a *RegexpExtractGroups) InStrNum() int {
+	return 1
+}
+
+func (a *RegexpExtractGroups) OutStrNum() int {
+	return action.Any
+}
+
+func (a *RegexpExtractGroups) Init(context.Context, *sync.WaitGroup) (err error) {
 	a.matcher, err = regexp.Compile(a.Pattern)
 	return
 }
 
-func (a *RegexpExtract) Do(ctx context.Context, _ selenium.WebDriver, input *action.Args, _ *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {
-	return a.MutateWithErr(ctx, input, func(text string) (string, error) {
-		matched, result := util.MatchExtract(a.matcher, a.FullMatch, text)
-		if !matched {
-			return result, fmt.Errorf("matching failed, pattern: %s, text: %s", a.Pattern, text)
-		}
-		return result, nil
-	})
+func (a *RegexpExtractGroups) Do(ctx context.Context, _ selenium.WebDriver, input *action.Args, _ *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {
+	text := input.Strings[0]
+	matched, results := util.MatchExtractMultiple(a.matcher, a.FullMatch, text)
+	if !matched {
+		err = fmt.Errorf("matching failed, pattern: %s, text: %s", a.Pattern, text)
+		return
+	}
+	output = action.StringsToArgs(results, input)
+	return
 }
 
-func (a *RegexpExtract) ToDTO() *action.DTO {
+func (a *RegexpExtractGroups) ToDTO() *action.DTO {
 	return &action.DTO{
 		ProtoDTO: &action.ProtoDTO{
-			Input:  []string{"text..."},
+			Input:  []string{"text"},
 			Output: []string{"extracted_text..."},
 		},
-		Values: map[string]string{"pattern": a.Pattern, "full_match": util.ToJSON(a.FullMatch), "skip": util.ToJSON(a.Skip)},
+		Values: map[string]string{"pattern": a.Pattern, "full_match": util.ToJSON(a.FullMatch)},
 	}
 }

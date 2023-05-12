@@ -61,6 +61,7 @@ func DefaultPlugins(config *config.EngineConfig) []Plugin {
 				//&action.CheckDate{},
 				// string mutator
 				&std.RegexpExtract{},
+				&std.RegexpExtractGroups{},
 				&std.Format{},
 				&std.ReduceFormat{},
 				&std.ReduceJoin{},
