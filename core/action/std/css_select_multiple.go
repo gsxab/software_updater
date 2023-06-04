@@ -16,6 +16,7 @@ package std
 
 import (
 	"context"
+	"fmt"
 	"github.com/tebeka/selenium"
 	"software_updater/core/action"
 	"software_updater/core/action/base"
@@ -46,6 +47,11 @@ func (a *CSSSelectMultiple) Do(ctx context.Context, driver selenium.WebDriver, i
 	elements, err := driver.FindElements(selenium.ByCSSSelector, a.Selector)
 	if err != nil {
 		logs.Error(ctx, "selenium element finding failed", err, "selector", a.Selector)
+		return
+	}
+	if len(elements) == 0 {
+		err = fmt.Errorf("selenium element not found")
+		logs.Error(ctx, "selenium element not found", err, "selector", a.Selector)
 		return
 	}
 	output = action.ElementsToArgs(elements, input)

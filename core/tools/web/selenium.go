@@ -17,6 +17,8 @@ package web
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
+	"fmt"
 	"github.com/tebeka/selenium"
 	"github.com/tebeka/selenium/chrome"
 	"log"
@@ -24,6 +26,8 @@ import (
 	"path"
 	"software_updater/core/config"
 	"software_updater/core/logs"
+	"software_updater/core/util/slice_util"
+	"strings"
 	"time"
 )
 
@@ -109,4 +113,24 @@ func TakeScreenshot(ctx context.Context, driver selenium.WebDriver, name string)
 	}
 
 	return filename, nil
+}
+
+func ElementToString(element selenium.WebElement) string {
+	tag, _ := element.TagName()
+	text, _ := element.Text()
+	return fmt.Sprintf("<%s>%s", tag, text)
+}
+
+func ElementsToString(elements []selenium.WebElement) string {
+	return strings.Join(slice_util.Map(elements, ElementToString), ",")
+}
+
+type Elements []selenium.WebElement
+
+func (es Elements) String() string {
+	return ElementsToString(es)
+}
+
+func (es Elements) MarshalJSON() ([]byte, error) {
+	return json.Marshal(es.String())
 }

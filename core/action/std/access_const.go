@@ -44,7 +44,7 @@ func (a *AccessConst) OutElmNum() int {
 	return 0
 }
 
-func (a *AccessConst) Do(ctx context.Context, driver selenium.WebDriver, _ *action.Args, _ *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {
+func (a *AccessConst) Do(ctx context.Context, driver selenium.WebDriver, input *action.Args, _ *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {
 	base, err := driver.CurrentURL()
 	if err != nil {
 		logs.Error(ctx, "selenium get current url failed", err)
@@ -66,6 +66,7 @@ func (a *AccessConst) Do(ctx context.Context, driver selenium.WebDriver, _ *acti
 		logs.Error(ctx, "selenium resize failed", err)
 		return
 	}
+	output = action.ElementsToArgs([]selenium.WebElement{}, input)
 	return
 }
 

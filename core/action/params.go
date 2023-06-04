@@ -17,10 +17,11 @@ package action
 import (
 	"fmt"
 	"github.com/tebeka/selenium"
+	"software_updater/core/tools/web"
 )
 
 type Args struct {
-	Elements []selenium.WebElement
+	Elements web.Elements
 	Strings  []string
 	Update   bool
 }
