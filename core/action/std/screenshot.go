@@ -27,30 +27,30 @@ import (
 	"time"
 )
 
-type StoreScreenshot struct {
+type TakeAndStoreScreenshot struct {
 	base.Default
-	base.DefaultFactory[StoreScreenshot, *StoreScreenshot]
+	base.DefaultFactory[TakeAndStoreScreenshot, *TakeAndStoreScreenshot]
 }
 
-func (a *StoreScreenshot) Path() action.Path {
-	return action.Path{"browser", "reader", "append_screenshot"}
+func (a *TakeAndStoreScreenshot) Path() action.Path {
+	return action.Path{"browser", "reader", "screenshot"}
 }
 
-func (a *StoreScreenshot) Icon() string {
+func (a *TakeAndStoreScreenshot) Icon() string {
 	return "mdi:mdi-image-plus-outline"
 }
 
-func (a *StoreScreenshot) OutStrNum() int {
+func (a *TakeAndStoreScreenshot) OutStrNum() int {
 	return action.OneMore
 }
 
-func (a *StoreScreenshot) getFilename(name string) string {
+func (a *TakeAndStoreScreenshot) getFilename(name string) string {
 	encodedName := base64.URLEncoding.EncodeToString([]byte(name))
 	dateSuffix := time.Now().Format("2006-01-02")
 	return encodedName + "@" + dateSuffix + ".png"
 }
 
-func (a *StoreScreenshot) Do(ctx context.Context, driver selenium.WebDriver, input *action.Args, version *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {
+func (a *TakeAndStoreScreenshot) Do(ctx context.Context, driver selenium.WebDriver, input *action.Args, version *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {
 	filename, err := web.TakeScreenshot(ctx, driver, version.Name)
 	if err != nil {
 		logs.Error(ctx, "selenium screenshot failed", err)
@@ -62,7 +62,7 @@ func (a *StoreScreenshot) Do(ctx context.Context, driver selenium.WebDriver, inp
 	return
 }
 
-func (a *StoreScreenshot) ToDTO() *action.DTO {
+func (a *TakeAndStoreScreenshot) ToDTO() *action.DTO {
 	return &action.DTO{
 		ProtoDTO: &action.ProtoDTO{},
 	}

@@ -54,9 +54,24 @@ func ElementToArgs(element selenium.WebElement, input *Args) *Args {
 	return ret
 }
 
-func AnotherElementToArgs(element selenium.WebElement, input *Args) *Args {
+func IndexedElementToArgs(element selenium.WebElement, index int, input *Args) *Args {
 	elements := []selenium.WebElement{element}
-	elements = append(elements, input.Elements...)
+	elements = append(elements, input.Elements[:index]...)
+	elements = append(elements, element)
+	elements = append(elements, input.Elements[index+1:]...)
+	ret := &Args{
+		Elements: elements,
+	}
+	if input != nil {
+		ret.Strings = input.Strings
+		ret.Update = input.Update
+	}
+	return ret
+}
+
+func AnotherElementToArgs(element selenium.WebElement, input *Args) *Args {
+	elements := input.Elements
+	elements = append(elements, element)
 	ret := &Args{
 		Elements: elements,
 	}
@@ -89,9 +104,24 @@ func StringToArgs(str string, input *Args) *Args {
 	return ret
 }
 
+func IndexedStringToArgs(str string, index int, input *Args) *Args {
+	var strings []string
+	strings = append(strings, input.Strings[:index]...)
+	strings = append(strings, str)
+	strings = append(strings, input.Strings[index+1:]...)
+	ret := &Args{
+		Strings: strings,
+	}
+	if input != nil {
+		ret.Strings = input.Strings
+		ret.Update = input.Update
+	}
+	return ret
+}
+
 func AnotherStringToArgs(str string, input *Args) *Args {
-	strings := []string{str}
-	strings = append(strings, input.Strings...)
+	strings := input.Strings
+	strings = append(strings, str)
 	ret := &Args{
 		Strings: strings,
 	}
