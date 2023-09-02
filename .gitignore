@@ -4,3 +4,4 @@
 /*.db
 /plugin/
 !/plugin/example_plugin/
+/ui/webui/dist/

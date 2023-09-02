@@ -15,8 +15,6 @@
 package webui
 
 import (
-	ginI18n "github.com/fishjar/gin-i18n"
-	"github.com/gin-gonic/gin"
 	"io/fs"
 	"mime"
 	"net/http"
@@ -24,11 +22,17 @@ import (
 	config2 "software_updater/ui/webui/config"
 	h "software_updater/ui/webui/handler"
 	"software_updater/ui/webui/midware"
+
+	ginI18n "github.com/fishjar/gin-i18n"
+	"github.com/gin-gonic/gin"
 )
 
 func RegisterRouters(r *gin.Engine) {
-	ginI18n.LocalizerInit("zh-Hans", "zh-Hans,en-US", "./localize")
-	r.Use(ginI18n.GinLocalizer())
+	r.Use(ginI18n.Localizer(&ginI18n.Options{
+		DefaultLang:  "zh-Hans",
+		SupportLangs: "zh-Hans,en-US",
+		FilePath:     "./localize",
+	}))
 
 	// screenshots
 	r.StaticFS("/static/screenshot", http.Dir(config.Current().Files.ScreenshotDir))

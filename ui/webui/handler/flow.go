@@ -15,8 +15,6 @@
 package handler
 
 import (
-	ginI18n "github.com/fishjar/gin-i18n"
-	"github.com/gin-gonic/gin"
 	"html/template"
 	"net/http"
 	"software_updater/core/flow"
@@ -24,6 +22,9 @@ import (
 	"software_updater/core/util"
 	"software_updater/ui/common"
 	"strings"
+
+	ginI18n "github.com/fishjar/gin-i18n"
+	"github.com/gin-gonic/gin"
 )
 
 type GetFlowRequest struct {
@@ -51,8 +52,7 @@ func GetFlow(ctx *gin.Context) {
 		return
 	}
 
-	localizer := ctx.MustGet("Localizer").(*ginI18n.UserLocalize)
-	addFlowI18NInfo(ctx, localizer, data.BranchDTO)
+	addFlowI18NInfo(ctx, data.BranchDTO)
 
 	ctx.JSON(http.StatusOK, data)
 }
@@ -60,12 +60,12 @@ func GetFlow(ctx *gin.Context) {
 const ActionNameI18NPrefix = "action_name."
 const ActionHelpI18NPrefix = "action_help."
 
-func addFlowI18NInfo(ctx *gin.Context, l *ginI18n.UserLocalize, data *flow.BranchDTO) {
+func addFlowI18NInfo(ctx *gin.Context, data *flow.BranchDTO) {
 	for _, step := range data.Steps {
 		actionKey := ActionNameI18NPrefix + step.ActionDTO.Name
-		step.ActionDTO.I18NName = l.GetMsg(actionKey)
+		step.ActionDTO.I18NName = ginI18n.Msg(ctx, actionKey)
 		actionHelpKey := ActionHelpI18NPrefix + step.ActionDTO.Name
-		actionHelpValue := l.GetMsg(actionHelpKey)
+		actionHelpValue := ginI18n.Msg(ctx, actionHelpKey)
 		if actionHelpValue != actionHelpKey {
 			tmpl, err := template.New(actionHelpKey).Parse(actionHelpValue)
 			if err != nil {
@@ -83,6 +83,6 @@ func addFlowI18NInfo(ctx *gin.Context, l *ginI18n.UserLocalize, data *flow.Branc
 	}
 
 	for _, branchDTO := range data.Next {
-		addFlowI18NInfo(ctx, l, branchDTO)
+		addFlowI18NInfo(ctx, branchDTO)
 	}
 }

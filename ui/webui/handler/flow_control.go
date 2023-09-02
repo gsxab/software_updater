@@ -15,11 +15,12 @@
 package handler
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"software_updater/core/logs"
 	"software_updater/core/util"
 	"software_updater/ui/common"
+
+	"github.com/gin-gonic/gin"
 )
 
 type StartFlowRequest struct {
@@ -38,6 +39,11 @@ type StartAllFlowData struct {
 func StartFlow(ctx *gin.Context) {
 	req := &StartFlowRequest{}
 	if err := ctx.ShouldBindUri(req); err != nil {
+		logs.Warn(ctx, "request param resolving failed", err, "req", util.ToJSON(req))
+		ctx.Status(http.StatusBadRequest)
+		return
+	}
+	if err := ctx.ShouldBindJSON(req); err != nil {
 		logs.Warn(ctx, "request param resolving failed", err, "req", util.ToJSON(req))
 		ctx.Status(http.StatusBadRequest)
 		return
@@ -61,6 +67,11 @@ func StartFlow(ctx *gin.Context) {
 func StartAllFlows(ctx *gin.Context) {
 	req := &StartFlowRequest{}
 	if err := ctx.ShouldBindUri(req); err != nil {
+		logs.Warn(ctx, "request param resolving failed", err, "req", util.ToJSON(req))
+		ctx.Status(http.StatusBadRequest)
+		return
+	}
+	if err := ctx.ShouldBindJSON(req); err != nil {
 		logs.Warn(ctx, "request param resolving failed", err, "req", util.ToJSON(req))
 		ctx.Status(http.StatusBadRequest)
 		return

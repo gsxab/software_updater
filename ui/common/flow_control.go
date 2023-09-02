@@ -20,6 +20,8 @@ import (
 	"software_updater/core/db/po"
 	"software_updater/core/engine"
 	"software_updater/core/logs"
+	"software_updater/core/util"
+	"time"
 )
 
 func StartFlow(ctx context.Context, name string, force bool) (map[string]engine.TaskID, error) {
@@ -27,12 +29,19 @@ func StartFlow(ctx context.Context, name string, force bool) (map[string]engine.
 	query := hpDAO.WithContext(ctx).Preload(hpDAO.Current).Preload(hpDAO.Current.Version)
 	if name != "all" {
 		query = query.Where(hpDAO.Name.Eq(name))
+	} else {
+		query = query.Where(hpDAO.NoUpdate.Not())
+		if !force {
+			cvDAO := dao.CurrentVersion
+			query = query.Join(cvDAO, cvDAO.Name.EqCol(hpDAO.Name)).Where(cvDAO.ScheduledAt.Gt(time.Now()))
+		}
 	}
 	hps, err := query.Find()
 	if err != nil {
-		logs.Error(ctx, "homepage query failed", err, "name", name)
+		logs.Error(ctx, "homepage query failed", err, "name", name, "force", force)
 		return nil, err
 	}
+	logs.InfoM(ctx, "homepages found", "name", name, "force", force, "list", util.ToJSON(hps))
 	data := make(map[string]engine.TaskID)
 	for _, hp := range hps {
 		id, err := startFlow(ctx, hp)
@@ -45,6 +54,7 @@ func StartFlow(ctx context.Context, name string, force bool) (map[string]engine.
 }
 
 func startFlow(ctx context.Context, hp *po.Homepage) (engine.TaskID, error) {
+	logs.InfoM(ctx, "starting flow", "name", hp.Name)
 	id, err := engine.Instance().Run(ctx, hp)
 	if err != nil {
 		return 0, err
