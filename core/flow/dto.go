@@ -43,9 +43,16 @@ type DTO struct {
 	Desc    string `json:"desc"`
 }
 
+type TaskMetaDTO struct {
+	ID      int64  `json:"id"`
+	Name    string `json:"name"`
+	Version string `json:"version"`
+	State   int    `json:"state"`
+}
+
 type TaskDTO struct {
 	*DTO
-	State State `json:"state"`
+	*TaskMetaDTO
 }
 
 func ToStepDTO(step Step) *StepDTO {

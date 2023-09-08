@@ -25,3 +25,4 @@ type ActionHierarchyDTO = action.HierarchyDTO
 type StepDTO = flow.StepDTO
 type FlowDTO = flow.DTO
 type TaskDTO = flow.TaskDTO
+type TaskMetaDTO = flow.TaskMetaDTO

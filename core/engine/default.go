@@ -17,7 +17,6 @@ package engine
 import (
 	"context"
 	"fmt"
-	"github.com/tebeka/selenium"
 	"software_updater/core/action"
 	"software_updater/core/config"
 	"software_updater/core/db/dao"
@@ -28,7 +27,10 @@ import (
 	"software_updater/core/tools/web"
 	"software_updater/core/util"
 	"software_updater/core/util/error_util"
+	"software_updater/core/util/slice_util"
 	"time"
+
+	"github.com/tebeka/selenium"
 )
 
 type DefaultEngine struct {
@@ -84,11 +86,31 @@ func (e *DefaultEngine) Run(ctx context.Context, hp *po.Homepage) (TaskID, error
 }
 
 func (e *DefaultEngine) CheckState(_ context.Context, id TaskID) (bool, flow.State, error) {
-	return e.taskRunner.GetTaskState(id)
+	exists, task, err := e.taskRunner.GetTask(id)
+	if err != nil || !exists {
+		return exists, 0, err
+	}
+	return exists, task.State, err
 }
 
 func (e *DefaultEngine) GetTaskIDMap(_ context.Context) (map[string]TaskID, error) {
 	return e.taskRunner.GetTaskIDMap()
+}
+
+func (e *DefaultEngine) GetTaskMeta(ctx context.Context, id TaskID) (bool, *flow.TaskMetaDTO, error) {
+	exists, task, err := e.taskRunner.GetTask(id)
+	if err != nil || !exists {
+		return exists, nil, err
+	}
+	return exists, task.MetaDTO(), err
+}
+
+func (e *DefaultEngine) GetTaskMetaList(ctx context.Context) ([]*flow.TaskMetaDTO, error) {
+	tasks, err := e.taskRunner.GetAllTasks()
+	if err != nil {
+		return nil, err
+	}
+	return slice_util.Map(tasks, func(task *Task) *flow.TaskMetaDTO { return task.MetaDTO() }), nil
 }
 
 func (e *DefaultEngine) NeedCrawl(ctx context.Context) (hps []*po.Homepage, err error) {

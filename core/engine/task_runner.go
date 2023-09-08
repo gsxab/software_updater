@@ -16,9 +16,6 @@ package engine
 
 import (
 	"context"
-	cache "github.com/gsxab/go-generic_lru"
-	cache_impl "github.com/gsxab/go-generic_lru/lru_with_rw_lock"
-	"github.com/tebeka/selenium"
 	"software_updater/core/action"
 	"software_updater/core/config"
 	"software_updater/core/db/po"
@@ -29,6 +26,10 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	cache "github.com/gsxab/go-generic_lru"
+	cache_impl "github.com/gsxab/go-generic_lru/lru_with_rw_lock"
+	"github.com/tebeka/selenium"
 )
 
 type TaskID = int64
@@ -43,6 +44,22 @@ type Task struct {
 	// runtime
 	Cancel context.CancelFunc
 	Wg     *sync.WaitGroup
+}
+
+func (t *Task) MetaDTO() *flow.TaskMetaDTO {
+	return &flow.TaskMetaDTO{
+		ID:      t.ID,
+		Name:    t.Name,
+		State:   t.State.Int(),
+		Version: t.CV.Version.Version,
+	}
+}
+
+func (t *Task) DTO() *flow.TaskDTO {
+	return &flow.TaskDTO{
+		DTO:         t.Flow.ToDTO(),
+		TaskMetaDTO: t.MetaDTO(),
+	}
 }
 
 type TaskRunner struct {
@@ -107,21 +124,31 @@ func (r *TaskRunner) Stop(ctx context.Context) {
 	r.cancel()
 }
 
-func (r *TaskRunner) GetTaskState(id TaskID) (bool, flow.State, error) {
+func (r *TaskRunner) GetTask(id TaskID) (bool, *Task, error) {
 	var task *Task
 	var ok bool
 
-	task, ok = r.done.Get(id)
-	if ok {
-		return true, task.State, nil
-	}
-
 	task, ok = r.pending.Get(id)
 	if ok {
-		return true, task.State, nil
+		return true, task, nil
 	}
 
-	return false, 0, nil
+	task, ok = r.done.Get(id)
+	if ok {
+		return true, task, nil
+	}
+
+	return false, nil, nil
+}
+
+func (r *TaskRunner) GetAllTasks() ([]*Task, error) {
+	r.done.ApplyRO(func(d cache.Cache[TaskID, *Task]) {
+		r.pending.ApplyRO(func(p cache.Cache[TaskID, *Task]) {
+			//
+		})
+	})
+
+	return nil, nil
 }
 
 func (r *TaskRunner) GetTaskIDMap() (map[string]TaskID, error) {

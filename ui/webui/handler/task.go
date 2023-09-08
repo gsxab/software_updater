@@ -15,11 +15,13 @@
 package handler
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"software_updater/core/logs"
 	"software_updater/core/util"
 	"software_updater/ui/common"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 type GetTaskStateRequest struct {
@@ -39,7 +41,7 @@ func GetTask(ctx *gin.Context) {
 		return
 	}
 
-	exist, state, err := common.GetTaskByID(ctx, req.TaskID)
+	exist, state, err := common.GetTaskStateByID(ctx, req.TaskID)
 	if err != nil {
 		ctx.Status(http.StatusInternalServerError)
 		return
@@ -66,4 +68,44 @@ func GetTaskIDMap(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, idMap)
+}
+
+type GetTaskListRequest struct {
+	TaskID string `uri:"id"`
+}
+
+func GetTaskList(ctx *gin.Context) {
+	req := &GetTaskListRequest{}
+	if err := ctx.ShouldBindUri(req); err != nil {
+		logs.Warn(ctx, "request param resolving failed", err, "req", util.ToJSON(req))
+		ctx.Status(http.StatusBadRequest)
+		return
+	}
+
+	if req.TaskID != "all" {
+		taskID, err := strconv.ParseInt(req.TaskID, 10, 64)
+		if err != nil {
+			logs.Warn(ctx, "request param resolving failed", err, "req", req, util.ToJSON(req))
+			ctx.Status(http.StatusBadRequest)
+			return
+		}
+		exists, data, err := common.GetTaskMeta(ctx, taskID)
+		if err != nil {
+			ctx.Status(http.StatusInternalServerError)
+			return
+		}
+		if !exists {
+			ctx.Status(http.StatusNotFound)
+			return
+		}
+		ctx.JSON(http.StatusOK, data)
+	}
+
+	data, err := common.GetTaskMetaList(ctx)
+	if err != nil {
+		ctx.Status(http.StatusInternalServerError)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, data)
 }

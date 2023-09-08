@@ -17,9 +17,10 @@ package common
 import (
 	"context"
 	"software_updater/core/engine"
+	"software_updater/ui/dto"
 )
 
-func GetTaskByID(ctx context.Context, taskID int64) (bool, int, error) {
+func GetTaskStateByID(ctx context.Context, taskID int64) (bool, int, error) {
 	exist, state, err := engine.Instance().CheckState(ctx, taskID)
 	return exist, int(state), err
 }
@@ -27,4 +28,14 @@ func GetTaskByID(ctx context.Context, taskID int64) (bool, int, error) {
 func GetTaskIDMap(ctx context.Context) (map[string]int64, error) {
 	idMap, err := engine.Instance().GetTaskIDMap(ctx)
 	return idMap, err
+}
+
+func GetTaskMeta(ctx context.Context, taskID int64) (bool, *dto.TaskMetaDTO, error) {
+	exists, taskMeta, err := engine.Instance().GetTaskMeta(ctx, taskID)
+	return exists, taskMeta, err
+}
+
+func GetTaskMetaList(ctx context.Context) ([]*dto.TaskMetaDTO, error) {
+	taskMetaList, err := engine.Instance().GetTaskMetaList(ctx)
+	return taskMetaList, err
 }
