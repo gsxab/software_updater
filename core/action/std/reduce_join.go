@@ -46,7 +46,7 @@ func (a *ReduceJoin) OutStrNum() int {
 func (a *ReduceJoin) Do(_ context.Context, _ selenium.WebDriver, input *action.Args, _ *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {
 	results := make([]string, 1, len(input.Strings)+1)
 	skipIndex := 0
-	texts := make([]string, 1, len(input.Strings)+1)
+	texts := make([]string, 0, len(input.Strings)+1)
 	for index, text := range input.Strings {
 		// strings skipped will be pushed into results[1:]
 		if skipIndex < len(a.Skip) && index == a.Skip[skipIndex] {

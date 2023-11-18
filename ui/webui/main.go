@@ -17,7 +17,6 @@ package webui
 import (
 	"context"
 	"encoding/json"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"os"
@@ -26,6 +25,8 @@ import (
 	"software_updater/ui/webui/config"
 	"syscall"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func InitAndRun(ctx context.Context, configExtraUI string) error {
