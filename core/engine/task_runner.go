@@ -15,7 +15,9 @@
 package engine
 
 import (
+	"container/list"
 	"context"
+	"errors"
 	"software_updater/core/action"
 	"software_updater/core/config"
 	"software_updater/core/db/po"
@@ -141,10 +143,45 @@ func (r *TaskRunner) GetTask(id TaskID) (bool, *Task, error) {
 	return false, nil, nil
 }
 
-func (r *TaskRunner) GetAllTasks() ([]*Task, error) {
+func (r *TaskRunner) GetAllTasks(ctx context.Context) (tasks []*Task, err error) {
 	r.done.ApplyRO(func(d cache.Cache[TaskID, *Task]) {
 		r.pending.ApplyRO(func(p cache.Cache[TaskID, *Task]) {
-			//
+			var listAny interface{}
+			listAny, err = p.Container()
+			if err != nil {
+				return
+			}
+			taskList, ok := listAny.(*list.List)
+			if !ok {
+				logs.ErrorM(ctx, "d.container is not *list.List")
+				err = errors.New("intenal error")
+			}
+			for e := taskList.Front(); e != nil; e = e.Next() {
+				task, ok := e.Value.(*Task)
+				if !ok {
+					logs.ErrorM(ctx, "d.container is not *list.List")
+					continue
+				}
+				tasks = append(tasks, task)
+			}
+
+			listAny, err = d.Container()
+			if err != nil {
+				return
+			}
+			taskList, ok = listAny.(*list.List)
+			if !ok {
+				logs.ErrorM(ctx, "d.container is not *list.List")
+				err = errors.New("intenal error")
+			}
+			for e := taskList.Front(); e != nil; e = e.Next() {
+				task, ok := e.Value.(*Task)
+				if !ok {
+					logs.ErrorM(ctx, "d.container is not *list.List")
+					continue
+				}
+				tasks = append(tasks, task)
+			}
 		})
 	})
 

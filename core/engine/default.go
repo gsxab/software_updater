@@ -106,7 +106,7 @@ func (e *DefaultEngine) GetTaskMeta(ctx context.Context, id TaskID) (bool, *flow
 }
 
 func (e *DefaultEngine) GetTaskMetaList(ctx context.Context) ([]*flow.TaskMetaDTO, error) {
-	tasks, err := e.taskRunner.GetAllTasks()
+	tasks, err := e.taskRunner.GetAllTasks(ctx)
 	if err != nil {
 		return nil, err
 	}
