@@ -22,15 +22,15 @@ import (
 	"software_updater/core/config"
 	"software_updater/core/db/po"
 	"software_updater/core/flow"
-	"software_updater/core/logs"
 	"software_updater/core/tools/web"
-	"software_updater/core/util/error_util"
 	"sync"
 	"sync/atomic"
 	"time"
 
+	"github.com/gsxab/error_util/errcollect"
 	cache "github.com/gsxab/go-generic_lru"
 	cache_impl "github.com/gsxab/go-generic_lru/lru_with_rw_lock"
+	"github.com/gsxab/logs"
 	"github.com/tebeka/selenium"
 )
 
@@ -202,7 +202,7 @@ func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.We
 	errChan := make(chan error, 16)
 	errStopChan := make(chan struct{})
 
-	errs := error_util.NewCollector()
+	errs := errcollect.New()
 	go func() {
 		err, ok := <-errChan
 		for ok {
@@ -235,7 +235,7 @@ func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.We
 	task.State = flow.Processing
 
 	// there may be multiple goroutines for vars, no write since here
-	update := r.runBranch(ctx, task.Flow.Root, driver, args, v, &error_util.ChannelCollector{Channel: errChan}, task)
+	update := r.runBranch(ctx, task.Flow.Root, driver, args, v, errcollect.NewFromChannel(errChan), task)
 	task.Wg.Wait()
 	// wait for goroutines for var task
 	close(errChan)
@@ -272,7 +272,7 @@ func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.We
 }
 
 func (r *TaskRunner) runBranch(ctx context.Context, branch *flow.Branch, driver selenium.WebDriver, args *action.Args,
-	v *po.Version, errs error_util.Collector, task *Task) (update bool) {
+	v *po.Version, errs errcollect.Collector, task *Task) (update bool) {
 	for _, j := range branch.Steps {
 		if args == nil {
 			args = &action.Args{}

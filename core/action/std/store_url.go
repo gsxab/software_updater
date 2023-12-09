@@ -16,13 +16,14 @@ package std
 
 import (
 	"context"
-	"github.com/tebeka/selenium"
 	"software_updater/core/action"
 	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"software_updater/core/util"
 	"software_updater/core/util/url_util"
 	"sync"
+
+	"github.com/tebeka/selenium"
 )
 
 type StoreURL struct {

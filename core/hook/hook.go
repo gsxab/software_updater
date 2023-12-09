@@ -17,7 +17,8 @@ package hook
 import (
 	"context"
 	"software_updater/core/action"
-	"software_updater/core/util/error_util"
+
+	"github.com/gsxab/error_util/errcollect"
 )
 
 type Variables struct {
@@ -29,7 +30,7 @@ type Variables struct {
 }
 
 type Hook struct {
-	F    func(ctx context.Context, vars *Variables, id string, errs error_util.Collector)
+	F    func(ctx context.Context, vars *Variables, id string, errs errcollect.Collector)
 	Name string
 }
 

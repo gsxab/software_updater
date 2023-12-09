@@ -17,9 +17,10 @@ package common
 import (
 	"context"
 	"software_updater/core/db/dao"
-	"software_updater/core/logs"
 	"software_updater/ui/dto"
 	"time"
+
+	"github.com/gsxab/logs"
 )
 
 func GetList(ctx context.Context) ([]*dto.ListItemDTO, error) {

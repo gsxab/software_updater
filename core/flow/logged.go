@@ -15,12 +15,13 @@
 package flow
 
 import (
-	"github.com/tebeka/selenium"
-	"golang.org/x/net/context"
 	"software_updater/core/action"
 	"software_updater/core/db/po"
-	"software_updater/core/util/error_util"
 	"sync"
+
+	"github.com/gsxab/error_util/errcollect"
+	"github.com/tebeka/selenium"
+	"golang.org/x/net/context"
 )
 
 type LoggedStep struct {
@@ -28,7 +29,7 @@ type LoggedStep struct {
 	info *DebugInfo
 }
 
-func (j *LoggedStep) RunAction(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version, errs error_util.Collector, wg *sync.WaitGroup) (*action.Args, bool, bool, error) {
+func (j *LoggedStep) RunAction(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version, errs errcollect.Collector, wg *sync.WaitGroup) (*action.Args, bool, bool, error) {
 	output, stop, cancel, err := j.DefaultStep.RunAction(ctx, driver, args, v, errs, wg)
 	j.info = &DebugInfo{
 		Err:    err,

@@ -16,12 +16,13 @@ package std
 
 import (
 	"context"
-	"github.com/tebeka/selenium"
 	"reflect"
 	"software_updater/core/action"
 	"software_updater/core/db/po"
 	"sync"
 	"testing"
+
+	"github.com/tebeka/selenium"
 )
 
 func TestAppendConst_Do(t *testing.T) {

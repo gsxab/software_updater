@@ -19,9 +19,10 @@ import (
 	"software_updater/core/db/dao"
 	"software_updater/core/db/po"
 	"software_updater/core/engine"
-	"software_updater/core/logs"
 	"software_updater/core/util"
 	"time"
+
+	"github.com/gsxab/logs"
 )
 
 func StartFlow(ctx context.Context, name string, force bool) (map[string]engine.TaskID, error) {

@@ -18,7 +18,8 @@ import (
 	"context"
 	"fmt"
 	"software_updater/core/action"
-	"software_updater/core/logs"
+
+	"github.com/gsxab/logs"
 )
 
 type IndexReader struct {

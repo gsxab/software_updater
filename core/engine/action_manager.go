@@ -19,8 +19,9 @@ import (
 	"fmt"
 	"software_updater/core/action"
 	"software_updater/core/hook"
-	"software_updater/core/logs"
 	"software_updater/core/util"
+
+	"github.com/gsxab/logs"
 )
 
 type ActionManager struct {

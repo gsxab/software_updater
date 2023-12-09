@@ -20,7 +20,8 @@ import (
 	"software_updater/core/action/std"
 	"software_updater/core/config"
 	"software_updater/core/hook"
-	"software_updater/core/util/error_util"
+
+	"github.com/gsxab/error_util/errcollect"
 )
 
 func DefaultPlugins(config *config.EngineConfig) []Plugin {
@@ -122,7 +123,7 @@ func getDebugCheckPlugin() *HookPlugin {
 				Action: action.Path{action.All},
 				Hook: hook.Hook{
 					Name: "debug_check_before_node",
-					F: func(ctx context.Context, vars *hook.Variables, id string, errs error_util.Collector) {
+					F: func(ctx context.Context, vars *hook.Variables, id string, errs errcollect.Collector) {
 						a := *vars.ActionPtr
 						errs.Collect(action.DynamicCheckInput(a.InElmNum(), len(vars.Input.Elements), id))
 						errs.Collect(action.DynamicCheckInput(a.InStrNum(), len(vars.Input.Strings), id))
@@ -135,7 +136,7 @@ func getDebugCheckPlugin() *HookPlugin {
 				Action: action.Path{action.All},
 				Hook: hook.Hook{
 					Name: "debug_check_after_node",
-					F: func(ctx context.Context, vars *hook.Variables, id string, errs error_util.Collector) {
+					F: func(ctx context.Context, vars *hook.Variables, id string, errs errcollect.Collector) {
 						a := *vars.ActionPtr
 						errs.Collect(action.DynamicCheckOutput(a.OutElmNum(), len(vars.Input.Elements), len(vars.Output.Elements), id))
 						errs.Collect(action.DynamicCheckOutput(a.OutStrNum(), len(vars.Input.Strings), len(vars.Output.Strings), id))

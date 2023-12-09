@@ -16,11 +16,11 @@ package handler
 
 import (
 	"net/http"
-	"software_updater/core/logs"
 	"software_updater/core/util"
 	"software_updater/ui/common"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gsxab/logs"
 )
 
 type StartFlowRequest struct {

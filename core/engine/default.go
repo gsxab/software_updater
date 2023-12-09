@@ -23,13 +23,13 @@ import (
 	"software_updater/core/db/po"
 	"software_updater/core/flow"
 	"software_updater/core/hook"
-	"software_updater/core/logs"
 	"software_updater/core/tools/web"
 	"software_updater/core/util"
-	"software_updater/core/util/error_util"
 	"software_updater/core/util/slice_util"
 	"time"
 
+	"github.com/gsxab/logs"
+	"github.com/gsxab/error_util/errcollect"
 	"github.com/tebeka/selenium"
 )
 
@@ -133,7 +133,7 @@ func (e *DefaultEngine) RunAll(ctx context.Context) error {
 		return err
 	}
 
-	errs := error_util.NewCollector()
+	errs := errcollect.New()
 	for _, hp := range hps {
 		_, err := e.Run(ctx, hp)
 		errs.Collect(err)

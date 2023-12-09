@@ -17,9 +17,10 @@ package base
 import (
 	"context"
 	"software_updater/core/action"
-	"software_updater/core/logs"
 	"software_updater/core/util"
-	"software_updater/core/util/error_util"
+
+	"github.com/gsxab/error_util/errcollect"
+	"github.com/gsxab/logs"
 )
 
 type StringMutator struct {
@@ -49,7 +50,7 @@ func (a *StringMutator) Mutate(input *action.Args, mutate func(text string) stri
 }
 
 func (a *StringMutator) MutateWithErr(ctx context.Context, input *action.Args, mutate func(text string) (string, error)) (output *action.Args, exit action.Result, err error) {
-	errs := error_util.NewCollector()
+	errs := errcollect.New()
 	output, exit, err = a.Mutate(input, func(text string) string {
 		result, err := mutate(text)
 		errs.CollectWithLog(err, func(err error) {

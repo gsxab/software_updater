@@ -15,6 +15,7 @@
 package webui
 
 import (
+	"context"
 	"io/fs"
 	"mime"
 	"net/http"
@@ -25,9 +26,10 @@ import (
 
 	ginI18n "github.com/fishjar/gin-i18n"
 	"github.com/gin-gonic/gin"
+	"github.com/gsxab/logs"
 )
 
-func RegisterRouters(r *gin.Engine) {
+func RegisterRouters(ctx context.Context, r *gin.Engine) {
 	r.Use(ginI18n.Localizer(&ginI18n.Options{
 		DefaultLang:  "zh-Hans",
 		SupportLangs: "zh-Hans,en-US",
@@ -52,12 +54,18 @@ func RegisterRouters(r *gin.Engine) {
 		//r.GET("/index.html", func(ctx *gin.Context) {
 		data, err := DistFiles.ReadFile("dist/index.html")
 		if err != nil {
+			logs.Error(ctx, "index.html not found", err)
+			ctx.Status(http.StatusNotFound)
+			return
 		}
 		ctx.Data(http.StatusOK, mime.TypeByExtension(".html"), data)
 	})
 	r.GET("/favicon.ico", func(ctx *gin.Context) {
 		data, err := DistFiles.ReadFile("dist/favicon.ico")
 		if err != nil {
+			logs.Warn(ctx, "favicon.ico not found", err)
+			ctx.Status(http.StatusNotFound)
+			return
 		}
 		ctx.Data(http.StatusOK, mime.TypeByExtension(".ico"), data)
 	})

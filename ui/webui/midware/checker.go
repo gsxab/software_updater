@@ -15,8 +15,9 @@
 package midware
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func CheckRPCSecret(secret *string) func(ctx *gin.Context) {

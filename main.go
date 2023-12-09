@@ -20,12 +20,15 @@ import (
 	"software_updater/core/config"
 	"software_updater/core/db"
 	"software_updater/core/engine"
-	"software_updater/core/logs"
 	"software_updater/core/tools/web"
 	"software_updater/ui/webui"
+
+	"github.com/gsxab/logs"
 )
 
 func main() {
+	logs.SetLevel(logs.InfoLevel)
+
 	conf, err := config.Load("./conf.yaml")
 	if err != nil {
 		log.Panic(err)

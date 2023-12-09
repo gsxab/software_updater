@@ -15,16 +15,14 @@
 package std
 
 import (
-	"github.com/tebeka/selenium"
-	"software_updater/core/action"
-)
-
-import (
 	"context"
 	"reflect"
+	"software_updater/core/action"
 	"software_updater/core/db/po"
 	"sync"
 	"testing"
+
+	"github.com/tebeka/selenium"
 )
 
 func TestAppendFormat_Do(t *testing.T) {

@@ -15,9 +15,10 @@
 package config
 
 import (
-	"gopkg.in/yaml.v3"
 	"log"
 	"os"
+
+	"gopkg.in/yaml.v3"
 )
 
 type Config struct {

@@ -15,8 +15,9 @@
 package po
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Version struct {

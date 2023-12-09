@@ -17,10 +17,11 @@ package common
 import (
 	"context"
 	"software_updater/core/db/dao"
-	"software_updater/core/logs"
 	"software_updater/core/util/optional"
 	"software_updater/ui/dto"
 	"time"
+
+	"github.com/gsxab/logs"
 )
 
 func GetVersionDetail(ctx context.Context, name string, optionalPage *string, v string) (*dto.VersionDTO, error) {

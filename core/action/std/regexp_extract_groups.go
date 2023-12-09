@@ -17,13 +17,14 @@ package std
 import (
 	"context"
 	"fmt"
-	"github.com/tebeka/selenium"
 	"regexp"
 	"software_updater/core/action"
 	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"software_updater/core/util"
 	"sync"
+
+	"github.com/tebeka/selenium"
 )
 
 type RegexpExtractGroups struct {

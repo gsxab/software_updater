@@ -16,8 +16,9 @@ package action
 
 import (
 	"fmt"
-	"github.com/tebeka/selenium"
 	"software_updater/core/tools/web"
+
+	"github.com/tebeka/selenium"
 )
 
 type Args struct {

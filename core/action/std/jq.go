@@ -17,12 +17,13 @@ package std
 import (
 	"context"
 	"fmt"
-	"github.com/itchyny/gojq"
-	"github.com/tebeka/selenium"
 	"software_updater/core/action"
 	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"sync"
+
+	"github.com/itchyny/gojq"
+	"github.com/tebeka/selenium"
 )
 
 type GoJQ struct {

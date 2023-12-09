@@ -16,11 +16,12 @@ package web
 
 import (
 	"context"
-	"github.com/tebeka/selenium"
 	"io"
 	"net/url"
 	"os/exec"
 	"software_updater/core/config"
+
+	"github.com/tebeka/selenium"
 )
 
 func SeleniumCookiesToHeader(url *url.URL, cookies []selenium.Cookie) (result []string) {

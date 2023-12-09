@@ -21,12 +21,12 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"software_updater/core/logs"
 	"software_updater/ui/webui/config"
 	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gsxab/logs"
 )
 
 func InitAndRun(ctx context.Context, configExtraUI string) error {
@@ -46,7 +46,7 @@ This is free software, and you are welcome to redistribute it under certain cond
 
 	r := gin.Default()
 
-	RegisterRouters(r)
+	RegisterRouters(ctx, r)
 
 	srv := &http.Server{
 		Addr:         config.WebUIConfig.Addr,
@@ -60,7 +60,7 @@ This is free software, and you are welcome to redistribute it under certain cond
 		}
 	}()
 
-	quit := make(chan os.Signal)
+	quit := make(chan os.Signal, 8)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
 
@@ -71,9 +71,7 @@ This is free software, and you are welcome to redistribute it under certain cond
 		logs.Error(ctx, "shutdown failed", err)
 		syscall.Exit(1)
 	}
-	select {
-	case <-ctx.Done():
-	}
+	<-ctx.Done()
 	logs.InfoM(ctx, "exiting")
 
 	return nil

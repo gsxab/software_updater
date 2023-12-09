@@ -21,9 +21,10 @@ import (
 	"software_updater/core/config"
 	"software_updater/core/flow"
 	"software_updater/core/hook"
-	"software_updater/core/util/error_util"
 	"strconv"
 	"sync"
+
+	"github.com/gsxab/error_util/errcollect"
 )
 
 type FlowInitializer struct {
@@ -35,7 +36,7 @@ func NewFlowInitializer() *FlowInitializer {
 
 func (t *FlowInitializer) Resolve(ctx context.Context, actionStr string, actionManager *ActionManager) (*flow.Flow, error) {
 	var storedFlow StoredFlow
-	errs := error_util.NewCollector()
+	errs := errcollect.New()
 	errs.Collect(json.Unmarshal([]byte(actionStr), &storedFlow))
 
 	fl := &flow.Flow{
@@ -46,7 +47,7 @@ func (t *FlowInitializer) Resolve(ctx context.Context, actionStr string, actionM
 }
 
 func (t *FlowInitializer) resolveBranch(ctx context.Context, storedBranch StoredBranch, actionManager *ActionManager,
-	errs *error_util.ErrorCollector, prefix string) *flow.Branch {
+	errs errcollect.Collector, prefix string) *flow.Branch {
 	steps := make([]flow.Step, 0, len(storedBranch.Actions))
 	for i, storedAction := range storedBranch.Actions {
 		a, hooks, err := actionManager.Action(ctx, &storedAction)
@@ -84,12 +85,12 @@ func (t *FlowInitializer) NewStep(_ context.Context, action action.Action, hooks
 
 func (t *FlowInitializer) StaticCheckFlow(flow *flow.Flow) error {
 	var elmArgN, strArgN int
-	errs := error_util.NewCollector()
+	errs := errcollect.New()
 	t.staticCheckBranch(flow.Root, elmArgN, strArgN, errs)
 	return errs.ToError()
 }
 
-func (t *FlowInitializer) staticCheckBranch(thread *flow.Branch, elmArgN int, strArgN int, errs *error_util.ErrorCollector) {
+func (t *FlowInitializer) staticCheckBranch(thread *flow.Branch, elmArgN int, strArgN int, errs errcollect.Collector) {
 	var err error
 	for _, j := range thread.Steps {
 		elmArgN, err = action.StaticCheckInput(j.Action().InElmNum(), j.Action().OutElmNum(), elmArgN, j.Name())
@@ -108,7 +109,7 @@ func (t *FlowInitializer) InitFlow(ctx context.Context, fl *flow.Flow) error {
 	errChan := make(chan error, 16)
 	overChan := make(chan struct{})
 
-	errs := error_util.NewCollector()
+	errs := errcollect.New()
 	go func() {
 		err, ok := <-errChan
 		for ok {
@@ -118,7 +119,7 @@ func (t *FlowInitializer) InitFlow(ctx context.Context, fl *flow.Flow) error {
 		close(overChan)
 	}()
 
-	t.initBranch(ctx, fl.Root, &error_util.ChannelCollector{Channel: errChan}, &wg)
+	t.initBranch(ctx, fl.Root, errcollect.NewFromChannel(errChan), &wg)
 
 	wg.Wait()
 	close(errChan)
@@ -126,7 +127,7 @@ func (t *FlowInitializer) InitFlow(ctx context.Context, fl *flow.Flow) error {
 	return errs.ToError()
 }
 
-func (t *FlowInitializer) initBranch(ctx context.Context, branch *flow.Branch, errs error_util.Collector, wg *sync.WaitGroup) {
+func (t *FlowInitializer) initBranch(ctx context.Context, branch *flow.Branch, errs errcollect.Collector, wg *sync.WaitGroup) {
 	for _, step := range branch.Steps {
 		step.InitAction(ctx, errs, wg)
 	}

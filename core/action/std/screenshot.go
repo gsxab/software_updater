@@ -17,14 +17,15 @@ package std
 import (
 	"context"
 	"encoding/base64"
-	"github.com/tebeka/selenium"
 	"software_updater/core/action"
 	"software_updater/core/action/base"
 	"software_updater/core/db/po"
-	"software_updater/core/logs"
 	"software_updater/core/tools/web"
 	"sync"
 	"time"
+
+	"github.com/gsxab/logs"
+	"github.com/tebeka/selenium"
 )
 
 type TakeAndStoreScreenshot struct {

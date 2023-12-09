@@ -16,9 +16,10 @@ package action
 
 import (
 	"context"
-	"github.com/tebeka/selenium"
 	"software_updater/core/db/po"
 	"sync"
+
+	"github.com/tebeka/selenium"
 )
 
 type Action interface {

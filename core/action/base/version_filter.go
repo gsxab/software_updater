@@ -17,8 +17,9 @@ package base
 import (
 	"context"
 	"software_updater/core/action"
-	"software_updater/core/logs"
-	"software_updater/core/util/version_util"
+
+	"github.com/gsxab/logs"
+	version_util "github.com/gsxab/version"
 )
 
 type VersionFilter struct {

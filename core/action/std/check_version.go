@@ -16,12 +16,13 @@ package std
 
 import (
 	"context"
-	"github.com/tebeka/selenium"
 	"software_updater/core/action"
 	"software_updater/core/action/base"
 	"software_updater/core/db/po"
-	"software_updater/core/util/version_util"
 	"sync"
+
+	version_util "github.com/gsxab/version"
+	"github.com/tebeka/selenium"
 )
 
 type CheckVersion struct {

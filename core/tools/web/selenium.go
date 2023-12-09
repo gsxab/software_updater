@@ -19,16 +19,17 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/tebeka/selenium"
-	"github.com/tebeka/selenium/chrome"
 	"log"
 	"os"
 	"path"
 	"software_updater/core/config"
-	"software_updater/core/logs"
 	"software_updater/core/util/slice_util"
 	"strings"
 	"time"
+
+	"github.com/gsxab/logs"
+	"github.com/tebeka/selenium"
+	"github.com/tebeka/selenium/chrome"
 )
 
 var service *selenium.Service

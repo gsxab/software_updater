@@ -16,11 +16,12 @@ package std
 
 import (
 	"context"
-	"github.com/tebeka/selenium"
 	"software_updater/core/action"
 	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"sync"
+
+	"github.com/tebeka/selenium"
 )
 
 type MarkUpdate struct {

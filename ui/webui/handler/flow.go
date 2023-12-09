@@ -18,13 +18,13 @@ import (
 	"html/template"
 	"net/http"
 	"software_updater/core/flow"
-	"software_updater/core/logs"
 	"software_updater/core/util"
 	"software_updater/ui/common"
 	"strings"
 
 	ginI18n "github.com/fishjar/gin-i18n"
 	"github.com/gin-gonic/gin"
+	"github.com/gsxab/logs"
 )
 
 type GetFlowRequest struct {

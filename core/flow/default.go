@@ -16,15 +16,16 @@ package flow
 
 import (
 	"fmt"
-	"github.com/tebeka/selenium"
-	"golang.org/x/net/context"
 	"software_updater/core/action"
 	"software_updater/core/db/po"
 	"software_updater/core/hook"
-	"software_updater/core/logs"
-	"software_updater/core/util/error_util"
 	"sync"
 	"time"
+
+	"github.com/gsxab/error_util/errcollect"
+	"github.com/gsxab/logs"
+	"github.com/tebeka/selenium"
+	"golang.org/x/net/context"
 )
 
 type DefaultStep struct {
@@ -46,7 +47,7 @@ func (j *DefaultStep) Action() action.Action {
 	return j.action
 }
 
-func (j *DefaultStep) InitAction(ctx context.Context, errs error_util.Collector, wg *sync.WaitGroup) {
+func (j *DefaultStep) InitAction(ctx context.Context, errs errcollect.Collector, wg *sync.WaitGroup) {
 	j.state = Init
 
 	select {
@@ -90,7 +91,7 @@ func (j *DefaultStep) InitAction(ctx context.Context, errs error_util.Collector,
 	j.state = Ready
 }
 
-func (j *DefaultStep) RunAction(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version, errs error_util.Collector, wg *sync.WaitGroup) (output *action.Args, finishBranch bool, stopFlow bool, err error) {
+func (j *DefaultStep) RunAction(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version, errs errcollect.Collector, wg *sync.WaitGroup) (output *action.Args, finishBranch bool, stopFlow bool, err error) {
 	j.state = Processing
 
 	select {
@@ -139,7 +140,7 @@ func (j *DefaultStep) RunAction(ctx context.Context, driver selenium.WebDriver, 
 }
 
 func (j *DefaultStep) run(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version,
-	errs error_util.Collector, wg *sync.WaitGroup) (output *action.Args, result action.Result, err error) {
+	errs errcollect.Collector, wg *sync.WaitGroup) (output *action.Args, result action.Result, err error) {
 	defer func() {
 		if msg := recover(); msg != nil {
 			logs.ErrorM(ctx, "recovered failure", "err", msg)

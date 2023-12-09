@@ -15,13 +15,14 @@
 package flow
 
 import (
-	"github.com/tebeka/selenium"
-	"golang.org/x/net/context"
 	"software_updater/core/action"
 	"software_updater/core/db/po"
 	"software_updater/core/hook"
-	"software_updater/core/util/error_util"
 	"sync"
+
+	"github.com/gsxab/error_util/errcollect"
+	"github.com/tebeka/selenium"
+	"golang.org/x/net/context"
 )
 
 type State int
@@ -54,8 +55,8 @@ func (s State) Int() int {
 type Step interface {
 	SetAction(action action.Action, hooks []*hook.ActionHooks)
 	Action() action.Action
-	InitAction(ctx context.Context, errs error_util.Collector, wg *sync.WaitGroup)
-	RunAction(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version, errs error_util.Collector, wg *sync.WaitGroup) (output *action.Args, finishBranch bool, stopFlow bool, err error)
+	InitAction(ctx context.Context, errs errcollect.Collector, wg *sync.WaitGroup)
+	RunAction(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version, errs errcollect.Collector, wg *sync.WaitGroup) (output *action.Args, finishBranch bool, stopFlow bool, err error)
 	State() State
 	SetState(State)
 	SetStateDesc(string)

@@ -16,12 +16,13 @@ package db
 
 import (
 	"fmt"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 	"log"
 	"software_updater/core/config"
 	"software_updater/core/db/dao"
 	"software_updater/core/db/po"
+
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 var db *gorm.DB

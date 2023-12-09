@@ -17,11 +17,12 @@ package std
 import (
 	"context"
 	"encoding/hex"
-	"github.com/tebeka/selenium"
 	"software_updater/core/action"
 	"software_updater/core/action/base"
 	"software_updater/core/db/po"
 	"sync"
+
+	"github.com/tebeka/selenium"
 )
 
 type HexDecode struct {

@@ -16,9 +16,10 @@ package engine
 
 import (
 	"context"
+	"software_updater/core/flow"
+
 	cache "github.com/gsxab/go-generic_lru"
 	cache_impl "github.com/gsxab/go-generic_lru/lru_with_rw_lock"
-	"software_updater/core/flow"
 )
 
 type FlowManager struct {
