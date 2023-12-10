@@ -23,7 +23,7 @@ import (
 	"software_updater/core/util/url_util"
 	"sync"
 
-	"github.com/gsxab/logs"
+	"github.com/gsxab/go-logs"
 	"github.com/tebeka/selenium"
 )
 

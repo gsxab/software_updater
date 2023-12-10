@@ -18,7 +18,7 @@ import (
 	"context"
 	"software_updater/core/action"
 
-	"github.com/gsxab/error_util/errcollect"
+	"github.com/gsxab/go-error_util/errcollect"
 )
 
 type Variables struct {

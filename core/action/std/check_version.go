@@ -21,7 +21,7 @@ import (
 	"software_updater/core/db/po"
 	"sync"
 
-	version_util "github.com/gsxab/version"
+	version_util "github.com/gsxab/go-version"
 	"github.com/tebeka/selenium"
 )
 

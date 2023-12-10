@@ -28,8 +28,8 @@ import (
 	"software_updater/core/util/slice_util"
 	"time"
 
-	"github.com/gsxab/logs"
-	"github.com/gsxab/error_util/errcollect"
+	"github.com/gsxab/go-error_util/errcollect"
+	"github.com/gsxab/go-logs"
 	"github.com/tebeka/selenium"
 )
 

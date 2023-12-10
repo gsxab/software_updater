@@ -18,8 +18,8 @@ import (
 	"context"
 	"software_updater/core/action"
 
-	"github.com/gsxab/logs"
-	version_util "github.com/gsxab/version"
+	"github.com/gsxab/go-logs"
+	version_util "github.com/gsxab/go-version"
 )
 
 type VersionFilter struct {

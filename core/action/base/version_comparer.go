@@ -19,8 +19,8 @@ import (
 	"software_updater/core/action"
 	"software_updater/core/db/dao"
 
-	"github.com/gsxab/logs"
-	version_util "github.com/gsxab/version"
+	"github.com/gsxab/go-logs"
+	version_util "github.com/gsxab/go-version"
 )
 
 type VersionComparer struct {

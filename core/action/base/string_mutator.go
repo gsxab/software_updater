@@ -19,8 +19,8 @@ import (
 	"software_updater/core/action"
 	"software_updater/core/util"
 
-	"github.com/gsxab/error_util/errcollect"
-	"github.com/gsxab/logs"
+	"github.com/gsxab/go-error_util/errcollect"
+	"github.com/gsxab/go-logs"
 )
 
 type StringMutator struct {

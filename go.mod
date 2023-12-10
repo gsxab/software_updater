@@ -5,10 +5,11 @@ go 1.18
 require (
 	github.com/fishjar/gin-i18n v0.0.3
 	github.com/gin-gonic/gin v1.9.1
-	github.com/gsxab/error_util v1.0.0
 	github.com/gsxab/go-generic_lru v1.0.2
-	github.com/gsxab/logs v1.0.0
-	github.com/gsxab/version v1.0.0
+	github.com/gsxab/go-error_util v1.0.0
+	github.com/gsxab/go-logs v1.0.0
+	github.com/gsxab/go-optional v1.0.0
+	github.com/gsxab/go-version v1.0.0
 	github.com/itchyny/gojq v0.12.13
 	github.com/tebeka/selenium v0.9.10-0.20211105214847-e9100b7f5ac1
 	golang.org/x/net v0.10.0
@@ -60,8 +61,10 @@ require (
 
 replace github.com/gsxab/go-generic_lru => ../generic_lru
 
-replace github.com/gsxab/logs => ../logs
+replace github.com/gsxab/go-logs => ../logs
 
-replace github.com/gsxab/error_util => ../error_util
+replace github.com/gsxab/go-error_util => ../error_util
 
-replace github.com/gsxab/version => ../version
+replace github.com/gsxab/go-version => ../version
+
+replace github.com/gsxab/go-optional => ../optional

@@ -20,7 +20,7 @@ import (
 	"software_updater/ui/common"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gsxab/logs"
+	"github.com/gsxab/go-logs"
 )
 
 type GetListRequest struct {

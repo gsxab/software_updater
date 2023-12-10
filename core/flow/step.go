@@ -15,14 +15,14 @@
 package flow
 
 import (
+	"context"
 	"software_updater/core/action"
 	"software_updater/core/db/po"
 	"software_updater/core/hook"
 	"sync"
 
-	"github.com/gsxab/error_util/errcollect"
+	"github.com/gsxab/go-error_util/errcollect"
 	"github.com/tebeka/selenium"
-	"golang.org/x/net/context"
 )
 
 type State int

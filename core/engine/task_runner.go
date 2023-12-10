@@ -27,10 +27,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/gsxab/error_util/errcollect"
 	cache "github.com/gsxab/go-generic_lru"
 	cache_impl "github.com/gsxab/go-generic_lru/lru_with_rw_lock"
-	"github.com/gsxab/logs"
+	"github.com/gsxab/go-error_util/errcollect"
+	"github.com/gsxab/go-logs"
 	"github.com/tebeka/selenium"
 )
 

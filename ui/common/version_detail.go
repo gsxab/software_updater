@@ -17,16 +17,16 @@ package common
 import (
 	"context"
 	"software_updater/core/db/dao"
-	"software_updater/core/util/optional"
 	"software_updater/ui/dto"
 	"time"
 
-	"github.com/gsxab/logs"
+	"github.com/gsxab/go-logs"
+	"github.com/gsxab/go-optional/optional"
 )
 
 func GetVersionDetail(ctx context.Context, name string, optionalPage *string, v string) (*dto.VersionDTO, error) {
 	flowEnabled := true // default true, except when it is web and no-update
-	page, err := optional.OrLazy(optionalPage, func() (string, error) {
+	page, err := optional.New(optionalPage).ValueOrLazyWithErr(func() (string, error) {
 		hpDAO := dao.Homepage
 		hp, err := hpDAO.WithContext(ctx).Where(hpDAO.Name.Eq(name)).Take()
 		if err != nil {

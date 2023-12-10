@@ -22,7 +22,7 @@ import (
 	"software_updater/core/util"
 	"time"
 
-	"github.com/gsxab/logs"
+	"github.com/gsxab/go-logs"
 )
 
 func StartFlow(ctx context.Context, name string, force bool) (map[string]engine.TaskID, error) {

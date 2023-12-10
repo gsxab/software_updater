@@ -23,7 +23,7 @@ import (
 	"software_updater/core/tools/web"
 	"software_updater/ui/webui"
 
-	"github.com/gsxab/logs"
+	"github.com/gsxab/go-logs"
 )
 
 func main() {

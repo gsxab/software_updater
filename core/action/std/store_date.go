@@ -23,7 +23,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gsxab/logs"
+	"github.com/gsxab/go-logs"
 	"github.com/tebeka/selenium"
 )
 

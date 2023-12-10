@@ -20,7 +20,7 @@ import (
 	"software_updater/ui/dto"
 	"time"
 
-	"github.com/gsxab/logs"
+	"github.com/gsxab/go-logs"
 )
 
 func GetList(ctx context.Context) ([]*dto.ListItemDTO, error) {

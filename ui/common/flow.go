@@ -22,7 +22,7 @@ import (
 	"software_updater/core/flow"
 	"software_updater/ui/dto"
 
-	"github.com/gsxab/logs"
+	"github.com/gsxab/go-logs"
 )
 
 func GetFlowByName(ctx context.Context, name string, reload bool) (*dto.FlowDTO, error) {

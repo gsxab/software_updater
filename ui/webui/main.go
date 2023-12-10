@@ -26,7 +26,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gsxab/logs"
+	"github.com/gsxab/go-logs"
 )
 
 func InitAndRun(ctx context.Context, configExtraUI string) error {

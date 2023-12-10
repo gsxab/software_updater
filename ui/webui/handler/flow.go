@@ -24,7 +24,7 @@ import (
 
 	ginI18n "github.com/fishjar/gin-i18n"
 	"github.com/gin-gonic/gin"
-	"github.com/gsxab/logs"
+	"github.com/gsxab/go-logs"
 )
 
 type GetFlowRequest struct {

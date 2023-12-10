@@ -21,7 +21,7 @@ import (
 	"software_updater/core/config"
 	"software_updater/core/hook"
 
-	"github.com/gsxab/error_util/errcollect"
+	"github.com/gsxab/go-error_util/errcollect"
 )
 
 func DefaultPlugins(config *config.EngineConfig) []Plugin {

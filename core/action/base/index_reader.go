@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"software_updater/core/action"
 
-	"github.com/gsxab/logs"
+	"github.com/gsxab/go-logs"
 )
 
 type IndexReader struct {

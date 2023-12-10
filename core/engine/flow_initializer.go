@@ -24,7 +24,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/gsxab/error_util/errcollect"
+	"github.com/gsxab/go-error_util/errcollect"
 )
 
 type FlowInitializer struct {
