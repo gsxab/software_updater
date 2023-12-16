@@ -94,7 +94,7 @@ func RegisterRouters(ctx context.Context, r *gin.Engine) {
 	g.POST("/flow/all/start", h.StartAllFlows)
 
 	// task
-	g.GET("/tasks", h.GetTaskIDMap)
+	g.GET("/tasks", h.GetTaskList)
 	//g.POST("/task/:id/cancel", h.CancelTask)
 	//g.POST("/task/all/cancel", h.CancelAllTasks)
 	g.GET("/task/:id", h.GetTask)

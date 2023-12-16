@@ -26,7 +26,7 @@ import (
 
 func GetVersionDetail(ctx context.Context, name string, optionalPage *string, v string) (*dto.VersionDTO, error) {
 	flowEnabled := true // default true, except when it is web and no-update
-	page, err := optional.New(optionalPage).ValueOrLazyWithErr(func() (string, error) {
+	page, err := optional.New(optionalPage).OrLazyE(func() (string, error) {
 		hpDAO := dao.Homepage
 		hp, err := hpDAO.WithContext(ctx).Where(hpDAO.Name.Eq(name)).Take()
 		if err != nil {

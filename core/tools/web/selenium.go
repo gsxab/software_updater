@@ -23,11 +23,11 @@ import (
 	"os"
 	"path"
 	"software_updater/core/config"
-	"software_updater/core/util/slice_util"
 	"strings"
 	"time"
 
 	"github.com/gsxab/go-logs"
+	"github.com/gsxab/go-slice_util"
 	"github.com/tebeka/selenium"
 	"github.com/tebeka/selenium/chrome"
 )

@@ -25,11 +25,11 @@ import (
 	"software_updater/core/hook"
 	"software_updater/core/tools/web"
 	"software_updater/core/util"
-	"software_updater/core/util/slice_util"
 	"time"
 
 	"github.com/gsxab/go-error_util/errcollect"
 	"github.com/gsxab/go-logs"
+	"github.com/gsxab/go-slice_util"
 	"github.com/tebeka/selenium"
 )
 

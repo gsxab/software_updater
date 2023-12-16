@@ -8,7 +8,8 @@ require (
 	github.com/gsxab/go-generic_lru v1.0.2
 	github.com/gsxab/go-error_util v1.0.0
 	github.com/gsxab/go-logs v1.0.0
-	github.com/gsxab/go-optional v1.0.0
+	github.com/gsxab/go-slice_util v0.1.0
+	github.com/gsxab/go-optional v0.2.0
 	github.com/gsxab/go-version v1.0.0
 	github.com/itchyny/gojq v0.12.13
 	github.com/tebeka/selenium v0.9.10-0.20211105214847-e9100b7f5ac1
@@ -68,3 +69,5 @@ replace github.com/gsxab/go-error_util => ../error_util
 replace github.com/gsxab/go-version => ../version
 
 replace github.com/gsxab/go-optional => ../optional
+
+replace github.com/gsxab/go-slice_util => ../slice_util

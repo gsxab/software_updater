@@ -16,7 +16,8 @@ package hook
 
 import (
 	"fmt"
-	"software_updater/core/util/slice_util"
+
+	"github.com/gsxab/go-slice_util"
 )
 
 type Event string
@@ -63,13 +64,13 @@ func (h *ActionHooks) PutAt(event Event, hook Hook, pos *Position) error {
 	case LastCmd:
 		*ptr = append(*ptr, hook)
 	case PrevCmd:
-		in, idx := slice_util.LinearSearchWithPtr(*ptr, func(x *Hook) bool { return x.Name == pos.Ref })
+		in, idx := slice_util.LinearSearchPtr(*ptr, func(x *Hook) bool { return x.Name == pos.Ref })
 		if !in {
 			return fmt.Errorf("registered not found")
 		}
 		*ptr = slice_util.Insert(*ptr, idx, hook)
 	case NextCmd:
-		in, idx := slice_util.LinearSearchWithPtr(*ptr, func(x *Hook) bool { return x.Name == pos.Ref })
+		in, idx := slice_util.LinearSearchPtr(*ptr, func(x *Hook) bool { return x.Name == pos.Ref })
 		if !in {
 			return fmt.Errorf("registered not found")
 		}
