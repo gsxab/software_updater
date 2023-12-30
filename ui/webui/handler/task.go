@@ -18,7 +18,9 @@ import (
 	"net/http"
 	"software_updater/core/util"
 	"software_updater/ui/common"
+	"software_updater/ui/dto"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gsxab/go-logs"
@@ -33,7 +35,7 @@ type GetTaskStateData struct {
 	State int  `json:"state"`
 }
 
-func GetTask(ctx *gin.Context) {
+func GetTaskState(ctx *gin.Context) {
 	req := &GetTaskStateRequest{}
 	if err := ctx.ShouldBindUri(req); err != nil {
 		logs.Warn(ctx, "request param resolving failed", err, "req", util.ToJSON(req))
@@ -70,8 +72,38 @@ func GetTaskIDMap(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, idMap)
 }
 
-type GetTaskListRequest struct {
+type GetTaskRequest struct {
 	TaskID string `uri:"id"`
+}
+
+func GetTask(ctx *gin.Context) {
+	req := &GetTaskRequest{}
+	if err := ctx.ShouldBindUri(req); err != nil {
+		logs.Warn(ctx, "request param resolving failed", err, "req", util.ToJSON(req))
+		ctx.Status(http.StatusBadRequest)
+		return
+	}
+
+	taskID, err := strconv.ParseInt(req.TaskID, 10, 64)
+	if err != nil {
+		logs.Warn(ctx, "request param resolving failed", err, "req", req, util.ToJSON(req))
+		ctx.Status(http.StatusBadRequest)
+		return
+	}
+	exists, data, err := common.GetTaskMeta(ctx, taskID)
+	if err != nil {
+		ctx.Status(http.StatusInternalServerError)
+		return
+	}
+	if !exists {
+		ctx.Status(http.StatusNotFound)
+		return
+	}
+	ctx.JSON(http.StatusOK, data)
+}
+
+type GetTaskListRequest struct {
+	TaskIDs string `uri:"ids"`
 }
 
 func GetTaskList(ctx *gin.Context) {
@@ -82,21 +114,26 @@ func GetTaskList(ctx *gin.Context) {
 		return
 	}
 
-	if req.TaskID != "all" {
-		taskID, err := strconv.ParseInt(req.TaskID, 10, 64)
-		if err != nil {
-			logs.Warn(ctx, "request param resolving failed", err, "req", req, util.ToJSON(req))
-			ctx.Status(http.StatusBadRequest)
-			return
-		}
-		exists, data, err := common.GetTaskMeta(ctx, taskID)
-		if err != nil {
-			ctx.Status(http.StatusInternalServerError)
-			return
-		}
-		if !exists {
-			ctx.Status(http.StatusNotFound)
-			return
+	if req.TaskIDs != "" {
+		splitIDs := strings.Split(req.TaskIDs, ",")
+		data := make([]*dto.TaskMetaDTO, 0, len(splitIDs))
+		for _, taskIDStr := range splitIDs {
+			taskID, err := strconv.ParseInt(taskIDStr, 10, 64)
+			if err != nil {
+				logs.Warn(ctx, "request param resolving failed", err, "req", req, util.ToJSON(req))
+				ctx.Status(http.StatusBadRequest)
+				return
+			}
+			exists, taskMeta, err := common.GetTaskMeta(ctx, taskID)
+			if err != nil {
+				ctx.Status(http.StatusInternalServerError)
+				return
+			}
+			if !exists {
+				ctx.Status(http.StatusNotFound)
+				return
+			}
+			data = append(data, taskMeta)
 		}
 		ctx.JSON(http.StatusOK, data)
 	}

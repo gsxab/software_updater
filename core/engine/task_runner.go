@@ -18,6 +18,7 @@ import (
 	"container/list"
 	"context"
 	"errors"
+	"reflect"
 	"software_updater/core/action"
 	"software_updater/core/config"
 	"software_updater/core/db/po"
@@ -64,6 +65,10 @@ func (t *Task) DTO() *flow.TaskDTO {
 	}
 }
 
+type TaskValuer interface {
+	Value() *Task
+}
+
 type TaskRunner struct {
 	nextId  TaskID
 	running *sync.Mutex                // locked if any task is running
@@ -100,7 +105,7 @@ func NewTaskRunner(ctx context.Context, start bool, interval int, update func(co
 func (r *TaskRunner) EnqueueJob(ctx context.Context, fl *flow.Flow, name string, cv *po.CurrentVersion, homepageURL string) (TaskID, error) {
 	if taskID, ok := r.nameMap[name]; ok {
 		if _, found := r.pending.Get(taskID); found {
-			logs.ErrorM(ctx, "enqueueing a job duplicated with a pending one")
+			logs.WarnM(ctx, "enqueueing a job duplicated with a pending one, skipping")
 			return taskID, nil
 		}
 	}
@@ -153,16 +158,17 @@ func (r *TaskRunner) GetAllTasks(ctx context.Context) (tasks []*Task, err error)
 			}
 			taskList, ok := listAny.(*list.List)
 			if !ok {
-				logs.ErrorM(ctx, "d.container is not *list.List")
+				logs.ErrorM(ctx, "p.container is not *list.List", "type", reflect.TypeOf(listAny))
 				err = errors.New("intenal error")
+				return
 			}
 			for e := taskList.Front(); e != nil; e = e.Next() {
-				task, ok := e.Value.(*Task)
+				task, ok := e.Value.(TaskValuer)
 				if !ok {
-					logs.ErrorM(ctx, "d.container is not *list.List")
+					logs.ErrorM(ctx, "one of the entries in p.container is not evaluated to Task", "type", reflect.TypeOf(e.Value))
 					continue
 				}
-				tasks = append(tasks, task)
+				tasks = append(tasks, task.Value())
 			}
 
 			listAny, err = d.Container()
@@ -171,21 +177,22 @@ func (r *TaskRunner) GetAllTasks(ctx context.Context) (tasks []*Task, err error)
 			}
 			taskList, ok = listAny.(*list.List)
 			if !ok {
-				logs.ErrorM(ctx, "d.container is not *list.List")
+				logs.ErrorM(ctx, "d.container is not *list.List", "type", reflect.TypeOf(listAny))
 				err = errors.New("intenal error")
+				return
 			}
 			for e := taskList.Front(); e != nil; e = e.Next() {
-				task, ok := e.Value.(*Task)
+				task, ok := e.Value.(TaskValuer)
 				if !ok {
-					logs.ErrorM(ctx, "d.container is not *list.List")
+					logs.ErrorM(ctx, "one of the entries in p.container is not evaluated to Task", "type", reflect.TypeOf(e.Value))
 					continue
 				}
-				tasks = append(tasks, task)
+				tasks = append(tasks, task.Value())
 			}
 		})
 	})
 
-	return nil, nil
+	return tasks, nil
 }
 
 func (r *TaskRunner) GetTaskIDMap() (map[string]TaskID, error) {

@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/fishjar/gin-i18n v0.0.3
 	github.com/gin-gonic/gin v1.9.1
-	github.com/gsxab/go-generic_lru v1.0.2
+	github.com/gsxab/go-generic_lru v1.0.3
 	github.com/gsxab/go-error_util v1.0.0
 	github.com/gsxab/go-logs v1.0.0
 	github.com/gsxab/go-slice_util v0.1.0
