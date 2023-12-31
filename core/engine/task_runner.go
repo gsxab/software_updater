@@ -28,9 +28,9 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/gsxab/go-error_util/errcollect"
 	cache "github.com/gsxab/go-generic_lru"
 	cache_impl "github.com/gsxab/go-generic_lru/lru_with_rw_lock"
-	"github.com/gsxab/go-error_util/errcollect"
 	"github.com/gsxab/go-logs"
 	"github.com/tebeka/selenium"
 )
@@ -152,17 +152,18 @@ func (r *TaskRunner) GetAllTasks(ctx context.Context) (tasks []*Task, err error)
 	r.done.ApplyRO(func(d cache.Cache[TaskID, *Task]) {
 		r.pending.ApplyRO(func(p cache.Cache[TaskID, *Task]) {
 			var listAny interface{}
-			listAny, err = p.Container()
+
+			listAny, err = d.Container()
 			if err != nil {
 				return
 			}
 			taskList, ok := listAny.(*list.List)
 			if !ok {
-				logs.ErrorM(ctx, "p.container is not *list.List", "type", reflect.TypeOf(listAny))
+				logs.ErrorM(ctx, "d.container is not *list.List", "type", reflect.TypeOf(listAny))
 				err = errors.New("intenal error")
 				return
 			}
-			for e := taskList.Front(); e != nil; e = e.Next() {
+			for e := taskList.Back(); e != nil; e = e.Prev() {
 				task, ok := e.Value.(TaskValuer)
 				if !ok {
 					logs.ErrorM(ctx, "one of the entries in p.container is not evaluated to Task", "type", reflect.TypeOf(e.Value))
@@ -171,17 +172,17 @@ func (r *TaskRunner) GetAllTasks(ctx context.Context) (tasks []*Task, err error)
 				tasks = append(tasks, task.Value())
 			}
 
-			listAny, err = d.Container()
+			listAny, err = p.Container()
 			if err != nil {
 				return
 			}
 			taskList, ok = listAny.(*list.List)
 			if !ok {
-				logs.ErrorM(ctx, "d.container is not *list.List", "type", reflect.TypeOf(listAny))
+				logs.ErrorM(ctx, "p.container is not *list.List", "type", reflect.TypeOf(listAny))
 				err = errors.New("intenal error")
 				return
 			}
-			for e := taskList.Front(); e != nil; e = e.Next() {
+			for e := taskList.Back(); e != nil; e = e.Prev() {
 				task, ok := e.Value.(TaskValuer)
 				if !ok {
 					logs.ErrorM(ctx, "one of the entries in p.container is not evaluated to Task", "type", reflect.TypeOf(e.Value))
