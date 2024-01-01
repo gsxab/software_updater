@@ -50,9 +50,13 @@ func (a *VersionFilter) Filter(ctx context.Context, input *action.Args,
 	if exit == action.Skipped {
 		return
 	}
+	if exit == action.EarlySuccessBranch {
+		logs.InfoM(ctx, "version checker marking early success", "current", currentVersion)
+		return
+	}
 	if !res {
 		logs.InfoM(ctx, "version checker stopping task", "current", currentVersion)
-		exit = action.StopFlow
+		exit = action.StopBranch
 	}
 	return
 }

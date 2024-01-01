@@ -29,14 +29,14 @@ type LoggedStep struct {
 	info *DebugInfo
 }
 
-func (j *LoggedStep) RunAction(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version, errs errcollect.Collector, wg *sync.WaitGroup) (*action.Args, bool, bool, error) {
-	output, stop, cancel, err := j.DefaultStep.RunAction(ctx, driver, args, v, errs, wg)
+func (j *LoggedStep) RunAction(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version, errs errcollect.Collector, wg *sync.WaitGroup) (*action.Args, bool, bool, bool, error) {
+	output, stop, earlySuccess, cancel, err := j.DefaultStep.RunAction(ctx, driver, args, v, errs, wg)
 	j.info = &DebugInfo{
 		Err:    err,
 		Input:  args,
 		Output: output,
 	}
-	return output, stop, cancel, err
+	return output, stop, earlySuccess, cancel, err
 }
 
 func (j *LoggedStep) ToDTO() *StepDTO {

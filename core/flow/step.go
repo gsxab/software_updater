@@ -46,6 +46,8 @@ const (
 	Skipped
 	// Aborted means a step has at least one error reported in running.
 	Aborted
+	// EarlySuccess means a step has marked itself an early success, or a task has exited with a step marked early success.
+	EarlySuccess
 )
 
 func (s State) Int() int {
@@ -56,7 +58,7 @@ type Step interface {
 	SetAction(action action.Action, hooks []*hook.ActionHooks)
 	Action() action.Action
 	InitAction(ctx context.Context, errs errcollect.Collector, wg *sync.WaitGroup)
-	RunAction(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version, errs errcollect.Collector, wg *sync.WaitGroup) (output *action.Args, finishBranch bool, stopFlow bool, err error)
+	RunAction(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version, errs errcollect.Collector, wg *sync.WaitGroup) (output *action.Args, finishBranch bool, earlySuccess bool, stopFlow bool, err error)
 	State() State
 	SetState(State)
 	SetStateDesc(string)

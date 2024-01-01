@@ -35,8 +35,11 @@ func (a *CheckVersion) Path() action.Path {
 }
 
 func (a *CheckVersion) Do(ctx context.Context, _ selenium.WebDriver, input *action.Args, version *po.Version, _ *sync.WaitGroup) (output *action.Args, exit action.Result, err error) {
-	return a.Compare(ctx, input, version.Previous, func(prevV *version_util.Version, newV *version_util.Version) bool {
-		return !newV.EQ(prevV)
+	return a.Compare(ctx, input, version.Previous, func(prevV *version_util.Version, newV *version_util.Version) (bool, action.Result) {
+		if !prevV.EQ(newV) {
+			return true, action.Finished // go on for a new version
+		}
+		return false, action.EarlySuccessBranch // no new version, mark a early success
 	})
 }
 

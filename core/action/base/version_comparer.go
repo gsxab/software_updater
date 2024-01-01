@@ -28,7 +28,7 @@ type VersionComparer struct {
 }
 
 func (a *VersionComparer) Compare(ctx context.Context, input *action.Args, prevID *uint,
-	callback func(prevV *version_util.Version, newV *version_util.Version) bool,
+	callback func(prevV *version_util.Version, newV *version_util.Version) (bool, action.Result),
 ) (output *action.Args, exit action.Result, err error) {
 	return a.Filter(ctx, input, func(newVersion *version_util.Version) (res bool, exit action.Result) {
 		if prevID == nil {
@@ -49,7 +49,7 @@ func (a *VersionComparer) Compare(ctx context.Context, input *action.Args, prevI
 			logs.Error(ctx, "version parsing failed", err, "format", a.VersionFormat, "previous", prev.Version)
 			return
 		}
-		res = callback(previousVersion, newVersion)
+		res, exit = callback(previousVersion, newVersion)
 		return
 	})
 }

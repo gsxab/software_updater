@@ -243,7 +243,7 @@ func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.We
 	task.State = flow.Processing
 
 	// there may be multiple goroutines for vars, no write since here
-	update := r.runBranch(ctx, task.Flow.Root, driver, args, v, errcollect.NewFromChannel(errChan), task)
+	earlySuccess, update := r.runBranch(ctx, task.Flow.Root, driver, args, v, errcollect.NewFromChannel(errChan), task)
 	task.Wg.Wait()
 	// wait for goroutines for var task
 	close(errChan)
@@ -253,11 +253,13 @@ func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.We
 	if task.State == flow.Processing { // may be set to cancel
 		if err != nil {
 			task.State = flow.Failure
+		} else if earlySuccess {
+			task.State = flow.EarlySuccess
 		} else {
 			task.State = flow.Success
 		}
 	}
-	if task.State != flow.Success {
+	if task.State != flow.Success && task.State != flow.EarlySuccess {
 		return nil, err
 	}
 
@@ -280,15 +282,19 @@ func (r *TaskRunner) RunTask(ctx context.Context, task *Task, driver selenium.We
 }
 
 func (r *TaskRunner) runBranch(ctx context.Context, branch *flow.Branch, driver selenium.WebDriver, args *action.Args,
-	v *po.Version, errs errcollect.Collector, task *Task) (update bool) {
+	v *po.Version, errs errcollect.Collector, task *Task) (earlySuccess, update bool) {
 	for _, j := range branch.Steps {
 		if args == nil {
 			args = &action.Args{}
 		}
-		output, finishBranch, stopFlow, _ := j.RunAction(ctx, driver, args, v, errs, task.Wg)
+		output, finishBranch, early, stopFlow, _ := j.RunAction(ctx, driver, args, v, errs, task.Wg)
 		if stopFlow {
 			task.Cancel()
 			task.State = flow.Cancelled
+			return
+		}
+		if early {
+			earlySuccess = true
 			return
 		}
 		if finishBranch {
@@ -302,17 +308,27 @@ func (r *TaskRunner) runBranch(ctx context.Context, branch *flow.Branch, driver 
 	if childCnt == 0 {
 		return
 	}
+
+	earlySuccess = true // assume true, set false if any branch is not early success
 	task.Wg.Add(childCnt - 1)
 	for i := 1; i < childCnt; i++ {
 		go func(branch2 *flow.Branch) {
-			if r.runBranch(ctx, branch2, driver, args, v, errs, task) {
+			defer task.Wg.Done()
+			subBranchEarly, subBranchUpdate := r.runBranch(ctx, branch2, driver, args, v, errs, task)
+			if subBranchUpdate {
 				update = true
 			}
-			task.Wg.Done()
+			if !subBranchEarly {
+				earlySuccess = false
+			}
 		}(branch.Next[i])
 	}
-	if r.runBranch(ctx, branch.Next[0], driver, args, v, errs, task) {
+	subBranchEarly, subBranchUpdate := r.runBranch(ctx, branch.Next[0], driver, args, v, errs, task)
+	if subBranchUpdate {
 		update = true
+	}
+	if !subBranchEarly {
+		earlySuccess = false
 	}
 	return
 }

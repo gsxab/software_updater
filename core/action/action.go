@@ -96,10 +96,11 @@ func ToProtoDTO(factory Factory) *ProtoDTO {
 type Result int
 
 const (
-	Finished   Result = iota // action exited with success or error (default)
-	Cancelled                // action cancelled before exiting
-	Again                    // action exited, and needs running again
-	StopBranch               // action exited, and needs current flow to stop
-	StopFlow                 // action exited, and needs current flow to stop
-	Skipped                  // action exited, for checking actions, no need to check
+	Finished           Result = iota // action exited with success or error (default)
+	Cancelled                        // action cancelled before exiting
+	Again                            // action exited, and needs running again
+	StopBranch                       // action exited, and needs current branch to stop
+	StopFlow                         // action exited, and needs current flow to stop
+	Skipped                          // action exited, for checking actions, no need to check
+	EarlySuccessBranch               // action exited, and marks current branch as an early success
 )

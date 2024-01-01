@@ -91,13 +91,13 @@ func (j *DefaultStep) InitAction(ctx context.Context, errs errcollect.Collector,
 	j.state = Ready
 }
 
-func (j *DefaultStep) RunAction(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version, errs errcollect.Collector, wg *sync.WaitGroup) (output *action.Args, finishBranch bool, stopFlow bool, err error) {
+func (j *DefaultStep) RunAction(ctx context.Context, driver selenium.WebDriver, args *action.Args, v *po.Version, errs errcollect.Collector, wg *sync.WaitGroup) (output *action.Args, finishBranch bool, earlySuccess bool, stopFlow bool, err error) {
 	j.state = Processing
 
 	select {
 	case <-ctx.Done():
 		j.state = Cancelled
-		return nil, true, true, nil
+		return nil, true, false, true, nil
 	default:
 	}
 	// ready
@@ -114,7 +114,7 @@ func (j *DefaultStep) RunAction(ctx context.Context, driver selenium.WebDriver, 
 	if err != nil {
 		j.state = Aborted
 		errs.Collect(fmt.Errorf("action run error: %w", err))
-		return output, true, true, err
+		return output, true, false, true, err
 	}
 	switch result {
 	case action.Cancelled:
@@ -125,6 +125,9 @@ func (j *DefaultStep) RunAction(ctx context.Context, driver selenium.WebDriver, 
 	case action.StopBranch:
 		j.state = Success
 		finishBranch = true
+	case action.EarlySuccessBranch:
+		j.state = EarlySuccess
+		earlySuccess = true
 	case action.StopFlow:
 		j.state = Success
 		finishBranch = true
