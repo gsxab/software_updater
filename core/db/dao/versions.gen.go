@@ -123,6 +123,8 @@ func (v version) TableName() string { return v.versionDo.TableName() }
 
 func (v version) Alias() string { return v.versionDo.Alias() }
 
+func (v version) Columns(cols ...field.Expr) gen.Columns { return v.versionDo.Columns(cols...) }
+
 func (v *version) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 	_f, ok := v.fieldMap[fieldName]
 	if !ok || _f == nil {
@@ -188,6 +190,11 @@ func (a versionHasOneCV) Where(conds ...field.Expr) *versionHasOneCV {
 
 func (a versionHasOneCV) WithContext(ctx context.Context) *versionHasOneCV {
 	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a versionHasOneCV) Session(session *gorm.Session) *versionHasOneCV {
+	a.db = a.db.Session(session)
 	return &a
 }
 
@@ -338,10 +345,6 @@ func (v versionDo) Select(conds ...field.Expr) IVersionDo {
 
 func (v versionDo) Where(conds ...gen.Condition) IVersionDo {
 	return v.withDO(v.DO.Where(conds...))
-}
-
-func (v versionDo) Exists(subquery interface{ UnderlyingDB() *gorm.DB }) IVersionDo {
-	return v.Where(field.CompareSubQuery(field.ExistsOp, nil, subquery.UnderlyingDB()))
 }
 
 func (v versionDo) Order(conds ...field.Expr) IVersionDo {

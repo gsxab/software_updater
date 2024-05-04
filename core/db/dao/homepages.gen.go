@@ -116,6 +116,8 @@ func (h homepage) TableName() string { return h.homepageDo.TableName() }
 
 func (h homepage) Alias() string { return h.homepageDo.Alias() }
 
+func (h homepage) Columns(cols ...field.Expr) gen.Columns { return h.homepageDo.Columns(cols...) }
+
 func (h *homepage) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 	_f, ok := h.fieldMap[fieldName]
 	if !ok || _f == nil {
@@ -176,6 +178,11 @@ func (a homepageHasOneCurrent) Where(conds ...field.Expr) *homepageHasOneCurrent
 
 func (a homepageHasOneCurrent) WithContext(ctx context.Context) *homepageHasOneCurrent {
 	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a homepageHasOneCurrent) Session(session *gorm.Session) *homepageHasOneCurrent {
+	a.db = a.db.Session(session)
 	return &a
 }
 
@@ -242,6 +249,11 @@ func (a homepageHasManyVersions) Where(conds ...field.Expr) *homepageHasManyVers
 
 func (a homepageHasManyVersions) WithContext(ctx context.Context) *homepageHasManyVersions {
 	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a homepageHasManyVersions) Session(session *gorm.Session) *homepageHasManyVersions {
+	a.db = a.db.Session(session)
 	return &a
 }
 
@@ -392,10 +404,6 @@ func (h homepageDo) Select(conds ...field.Expr) IHomepageDo {
 
 func (h homepageDo) Where(conds ...gen.Condition) IHomepageDo {
 	return h.withDO(h.DO.Where(conds...))
-}
-
-func (h homepageDo) Exists(subquery interface{ UnderlyingDB() *gorm.DB }) IHomepageDo {
-	return h.Where(field.CompareSubQuery(field.ExistsOp, nil, subquery.UnderlyingDB()))
 }
 
 func (h homepageDo) Order(conds ...field.Expr) IHomepageDo {

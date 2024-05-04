@@ -110,6 +110,10 @@ func (c currentVersion) TableName() string { return c.currentVersionDo.TableName
 
 func (c currentVersion) Alias() string { return c.currentVersionDo.Alias() }
 
+func (c currentVersion) Columns(cols ...field.Expr) gen.Columns {
+	return c.currentVersionDo.Columns(cols...)
+}
+
 func (c *currentVersion) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 	_f, ok := c.fieldMap[fieldName]
 	if !ok || _f == nil {
@@ -170,6 +174,11 @@ func (a currentVersionBelongsToVersion) Where(conds ...field.Expr) *currentVersi
 
 func (a currentVersionBelongsToVersion) WithContext(ctx context.Context) *currentVersionBelongsToVersion {
 	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a currentVersionBelongsToVersion) Session(session *gorm.Session) *currentVersionBelongsToVersion {
+	a.db = a.db.Session(session)
 	return &a
 }
 
@@ -320,10 +329,6 @@ func (c currentVersionDo) Select(conds ...field.Expr) ICurrentVersionDo {
 
 func (c currentVersionDo) Where(conds ...gen.Condition) ICurrentVersionDo {
 	return c.withDO(c.DO.Where(conds...))
-}
-
-func (c currentVersionDo) Exists(subquery interface{ UnderlyingDB() *gorm.DB }) ICurrentVersionDo {
-	return c.Where(field.CompareSubQuery(field.ExistsOp, nil, subquery.UnderlyingDB()))
 }
 
 func (c currentVersionDo) Order(conds ...field.Expr) ICurrentVersionDo {
